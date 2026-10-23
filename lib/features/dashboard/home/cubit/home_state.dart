@@ -1,37 +1,40 @@
-enum HomeStatus { initial, loading, loaded }
+import 'package:runca/features/dashboard/home/models/home_model.dart';
+import 'package:runca/features/dashboard/profile/models/profile_model.dart';
+
+enum HomeStatus { loading, success, failure }
 
 class HomeState {
   const HomeState({
-    this.status = HomeStatus.initial,
-    this.streak = 4,
-    this.completedDays = const [true, true, true, true, false, false, false],
-    this.weeklyDistance = 12.5,
-    this.weeklyDuration = 95,
-    this.weeklyRuns = 3,
+    this.status = HomeStatus.loading,
+    this.activityType = HomeActivityType.outdoor,
+    this.overview,
+    this.weeklyStats,
+    this.profile,
+    this.hasError = false,
   });
 
   final HomeStatus status;
-  final int streak;
-  final List<bool> completedDays;
-  final double weeklyDistance;
-  final int weeklyDuration;
-  final int weeklyRuns;
+  final HomeActivityType activityType;
+  final HomeOverview? overview;
+  final WeeklyStatsData? weeklyStats;
+  final ProfileModel? profile;
+  final bool hasError;
 
   HomeState copyWith({
     HomeStatus? status,
-    int? streak,
-    List<bool>? completedDays,
-    double? weeklyDistance,
-    int? weeklyDuration,
-    int? weeklyRuns,
+    HomeActivityType? activityType,
+    HomeOverview? overview,
+    WeeklyStatsData? weeklyStats,
+    ProfileModel? profile,
+    bool? hasError,
   }) {
     return HomeState(
       status: status ?? this.status,
-      streak: streak ?? this.streak,
-      completedDays: completedDays ?? this.completedDays,
-      weeklyDistance: weeklyDistance ?? this.weeklyDistance,
-      weeklyDuration: weeklyDuration ?? this.weeklyDuration,
-      weeklyRuns: weeklyRuns ?? this.weeklyRuns,
+      activityType: activityType ?? this.activityType,
+      overview: overview ?? this.overview,
+      weeklyStats: weeklyStats ?? this.weeklyStats,
+      profile: profile ?? this.profile,
+      hasError: hasError ?? this.hasError,
     );
   }
 }

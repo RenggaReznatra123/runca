@@ -94,7 +94,7 @@ class UnauthorizedInterceptor extends Interceptor {
     if (err.response?.statusCode == 401 && !_isRedirectingToLogin) {
       _isRedirectingToLogin = true;
       try {
-        await serviceLocator.get<UserPreference>().clearAllData();
+        await serviceLocator.get<UserPreference>().clearSession();
         // navigatorKey.currentState?.pushAndRemoveUntil(
         //   MaterialPageRoute(builder: (_) => const LoginScreen()),
         //   (_) => false,

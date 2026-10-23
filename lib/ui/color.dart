@@ -134,4 +134,16 @@ class AppPalette {
   ); // Figma #ffb43f33
   static const Color borderFormDefault = Color(0xFFE3E3E3);
   static const Color borderFormDanger = Color(0xFFD82027);
+
+  // Profile dan Settings
+  static const Color profileAccent = Color(0xFF0284C7);
+  static const Color profileMutedText = Color(0xFF8293AD);
+  static const Color profileMutedIcon = Color(0xFF91A2BB);
+  static const Color profileDarkText = Color(0xFF172033);
+  static const Color settingsDarkText = Color(0xFF343943);
+  static const Color profileSoftBorder = Color(0xFFC8D4E3);
+  static const Color profileDangerBackground = Color(0xFFFFF0F0);
+  static const Color profileDangerText = Color(0xFFFF3030);
+  static const Color settingsDangerButton = Color(0xFFFF3838);
+  static const Color achievementGold = Color(0xFFF5B82E);
 }

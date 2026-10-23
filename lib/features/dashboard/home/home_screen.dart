@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:runca/features/dashboard/activity/widgets/activity_state_view.dart';
+import 'package:runca/features/dashboard/home/models/home_model.dart';
 import 'package:runca/ui/color.dart';
 
 import '../activity/cubit/activity_cubit.dart';
@@ -7,7 +9,7 @@ import '../activity/cubit/activity_state.dart';
 import '../activity/models/activity_model.dart';
 import '../challenge/challenge_detail_screen.dart';
 import '../challenge/cubit/challenge_cubit.dart';
-import '../challenge/models/challenge_model.dart';
+import '../challenge/cubit/challenge_state.dart';
 import '../cubit/dashboard_cubit.dart';
 import '../cubit/dashboard_state.dart';
 import 'cubit/home_cubit.dart';
@@ -25,23 +27,17 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => HomeCubit()..loadHome()),
+        BlocProvider(create: (_) => HomeCubit()),
         BlocProvider(create: (_) => ActivityCubit()),
+        BlocProvider(create: (_) => ChallengeCubit()),
       ],
       child: const _HomeView(),
     );
   }
 }
 
-class _HomeView extends StatefulWidget {
+class _HomeView extends StatelessWidget {
   const _HomeView();
-
-  @override
-  State<_HomeView> createState() => _HomeViewState();
-}
-
-class _HomeViewState extends State<_HomeView> {
-  bool isOutdoor = true;
 
   @override
   Widget build(BuildContext context) {
@@ -49,209 +45,288 @@ class _HomeViewState extends State<_HomeView> {
       backgroundColor: AppPalette.bg,
       body: SafeArea(
         bottom: false,
-        child: BlocBuilder<HomeCubit, HomeState>(
-          builder: (context, state) {
-            return SingleChildScrollView(
-              physics: const ClampingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics(),
-              ),
-              padding: const EdgeInsets.only(bottom: 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
-                    child: HomeHeader(),
+        child: BlocListener<HomeCubit, HomeState>(
+          listener: (context, state) {
+            if (state.hasError) {
+              context.read<HomeCubit>().clearError();
+              ScaffoldMessenger.of(context)
+                ..hideCurrentSnackBar()
+                ..showSnackBar(
+                  const SnackBar(
+                    content: Text('Unable to refresh home data. Try again.'),
+                    behavior: SnackBarBehavior.floating,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: StreakCard(streak: 0),
+                );
+            }
+          },
+          child: BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, state) {
+              if (state.status == HomeStatus.loading &&
+                  state.overview == null) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: AppPalette.bgFillPrimary,
                   ),
-                  const SizedBox(height: 28),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: WeeklyCalendar(),
+                );
+              }
+
+              if (state.status == HomeStatus.failure ||
+                  state.overview == null ||
+                  state.weeklyStats == null ||
+                  state.profile == null) {
+                return ActivityStateView(
+                  leading: const DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: AppPalette.bgSurfacePrimary,
+                      shape: BoxShape.circle,
+                    ),
+                    child: SizedBox(
+                      width: 104,
+                      height: 104,
+                      child: Icon(
+                        Icons.cloud_off_outlined,
+                        size: 44,
+                        color: AppPalette.bgFillPrimary,
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 22),
-                  const Divider(
-                    height: 1,
-                    thickness: 4,
-                    color: AppPalette.borderNeutral,
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            const Expanded(
-                              child: Text(
-                                'This Week',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: AppPalette.textNeutralPrimary,
+                  title: 'Unable to load home',
+                  message:
+                      'We couldn’t load your home data. Check your connection and try again.',
+                  actionLabel: 'Try Again',
+                  onAction: context.read<HomeCubit>().loadHome,
+                );
+              }
+
+              final overview = state.overview!;
+              final weeklyStats = state.weeklyStats!;
+              final profile = state.profile!;
+              return SingleChildScrollView(
+                physics: const ClampingScrollPhysics(
+                  parent: AlwaysScrollableScrollPhysics(),
+                ),
+                padding: const EdgeInsets.only(bottom: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
+                      child: HomeHeader(name: profile.name),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: StreakCard(streak: overview.streak),
+                    ),
+                    const SizedBox(height: 28),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: WeeklyCalendar(weekDays: overview.weekDays),
+                    ),
+                    const SizedBox(height: 22),
+                    const Divider(
+                      height: 1,
+                      thickness: 4,
+                      color: AppPalette.borderNeutral,
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              const Expanded(
+                                child: Text(
+                                  'This Week',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppPalette.textNeutralPrimary,
+                                  ),
                                 ),
                               ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.all(3),
-                              decoration: BoxDecoration(
-                                color: AppPalette.bgSurfaceNeutral,
-                                borderRadius: BorderRadius.circular(24),
+                              Container(
+                                padding: const EdgeInsets.all(3),
+                                decoration: BoxDecoration(
+                                  color: AppPalette.bgSurfaceNeutral,
+                                  borderRadius: BorderRadius.circular(24),
+                                ),
+                                child: Row(
+                                  children: [
+                                    _ActivityToggle(
+                                      label: 'Indoor',
+                                      selected:
+                                          state.activityType ==
+                                          HomeActivityType.indoor,
+                                      onTap: () => context
+                                          .read<HomeCubit>()
+                                          .selectActivityType(
+                                            HomeActivityType.indoor,
+                                          ),
+                                    ),
+                                    _ActivityToggle(
+                                      label: 'Outdoor',
+                                      selected:
+                                          state.activityType ==
+                                          HomeActivityType.outdoor,
+                                      onTap: () => context
+                                          .read<HomeCubit>()
+                                          .selectActivityType(
+                                            HomeActivityType.outdoor,
+                                          ),
+                                    ),
+                                  ],
+                                ),
                               ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          WeeklyStats(stats: weeklyStats),
+                        ],
+                      ),
+                    ),
+
+                    // Last Activity hanya muncul jika aktivitas tersedia.
+                    BlocBuilder<ActivityCubit, ActivityState>(
+                      builder: (context, activityState) {
+                        if (activityState.status != ActivityStatus.success ||
+                            activityState.activities.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+
+                        final activities = [...activityState.activities]
+                          ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
+
+                        final latestActivity = activities.first;
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Divider(
+                              height: 1,
+                              thickness: 4,
+                              color: AppPalette.borderNeutral,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
                               child: Row(
                                 children: [
-                                  _ActivityToggle(
-                                    label: 'Indoor',
-                                    selected: !isOutdoor,
-                                    onTap: () {
-                                      setState(() => isOutdoor = false);
-                                    },
+                                  const Expanded(
+                                    child: Text(
+                                      'Last Activity',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppPalette.textNeutralPrimary,
+                                      ),
+                                    ),
                                   ),
-                                  _ActivityToggle(
-                                    label: 'Outdoor',
-                                    selected: isOutdoor,
+                                  GestureDetector(
                                     onTap: () {
-                                      setState(() => isOutdoor = true);
+                                      context
+                                          .read<DashboardCubit>()
+                                          .openActivity(ActivityTab.activities);
                                     },
+                                    child: const Text(
+                                      'View All',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: AppPalette.bgFillPrimary,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
                             ),
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
+                              child: _LastActivityCard(
+                                activity: latestActivity,
+                              ),
+                            ),
                           ],
-                        ),
-                        const SizedBox(height: 14),
-                        WeeklyStats(isOutdoor: isOutdoor),
-                      ],
+                        );
+                      },
                     ),
-                  ),
 
-                  // Last Activity hanya muncul jika aktivitas tersedia.
-                  BlocBuilder<ActivityCubit, ActivityState>(
-                    builder: (context, activityState) {
-                      if (activityState.status != ActivityStatus.success ||
-                          activityState.activities.isEmpty) {
-                        return const SizedBox.shrink();
-                      }
+                    const Divider(
+                      height: 1,
+                      thickness: 4,
+                      color: AppPalette.borderNeutral,
+                    ),
 
-                      final activities = [...activityState.activities]
-                        ..sort((a, b) => b.startedAt.compareTo(a.startedAt));
-
-                      final latestActivity = activities.first;
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+                      child: Row(
                         children: [
-                          const Divider(
-                            height: 1,
-                            thickness: 4,
-                            color: AppPalette.borderNeutral,
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                            child: Row(
-                              children: [
-                                const Expanded(
-                                  child: Text(
-                                    'Last Activity',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                      color: AppPalette.textNeutralPrimary,
-                                    ),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: () {
-                                    context.read<DashboardCubit>().openActivity(
-                                      ActivityTab.activities,
-                                    );
-                                  },
-                                  child: const Text(
-                                    'View All',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: AppPalette.bgFillPrimary,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                          const Expanded(
+                            child: Text(
+                              'New Challenge',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: AppPalette.textNeutralPrimary,
+                              ),
                             ),
                           ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-                            child: _LastActivityCard(activity: latestActivity),
+                          GestureDetector(
+                            onTap: () {
+                              context.read<DashboardCubit>().selectTab(
+                                DashboardTab.challenge,
+                              );
+                            },
+                            child: const Text(
+                              'See all',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: AppPalette.bgFillPrimary,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
                           ),
                         ],
-                      );
-                    },
-                  ),
-
-                  const Divider(
-                    height: 1,
-                    thickness: 4,
-                    color: AppPalette.borderNeutral,
-                  ),
-
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
-                    child: Row(
-                      children: [
-                        const Expanded(
-                          child: Text(
-                            'New Challenge',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppPalette.textNeutralPrimary,
-                            ),
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            context.read<DashboardCubit>().selectTab(
-                              DashboardTab.challenge,
-                            );
-                          },
-                          child: const Text(
-                            'See all',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: AppPalette.bgFillPrimary,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
-                  ...ChallengeCubit.dummyChallenges
-                      .take(2)
-                      .map(
-                        (challenge) => ChallengeCard(
-                          challenge: challenge,
-                          onTap: () => _openChallengeDetail(context, challenge),
-                        ),
                       ),
+                    ),
 
-                  const SizedBox(height: 12),
-                ],
-              ),
-            );
-          },
+                    BlocBuilder<ChallengeCubit, ChallengeState>(
+                      builder: (context, challengeState) {
+                        if (challengeState.status != ChallengeStatus.success) {
+                          return const SizedBox.shrink();
+                        }
+
+                        return Column(
+                          children: challengeState.challenges
+                              .take(2)
+                              .map(
+                                (challenge) => ChallengeCard(
+                                  challenge: challenge,
+                                  onTap: () => _openChallengeDetail(
+                                    context,
+                                    challenge.id,
+                                  ),
+                                ),
+                              )
+                              .toList(growable: false),
+                        );
+                      },
+                    ),
+
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              );
+            },
+          ),
         ),
       ),
     );
   }
 
-  void _openChallengeDetail(BuildContext context, ChallengeModel challenge) {
+  void _openChallengeDetail(BuildContext context, String challengeId) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) => ChallengeDetailScreen(challenge: challenge),
+        builder: (_) => ChallengeDetailScreen(challengeId: challengeId),
       ),
     );
   }

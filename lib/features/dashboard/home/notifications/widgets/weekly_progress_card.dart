@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
+import 'package:runca/utility/format_utils.dart';
 import '../models/notification_model.dart';
 
 class WeeklyProgressCard extends StatelessWidget {
@@ -12,10 +13,10 @@ class WeeklyProgressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = [
-      (progress.distance, 'Total Distance'),
-      (progress.calories, 'Calories'),
-      (progress.pace, 'Avg Pace'),
-      (progress.duration, 'Duration'),
+      ('${AppFormat.distanceValue(progress.distanceKm)} km', 'Total Distance'),
+      (AppFormat.calories(progress.calories), 'Calories'),
+      (AppFormat.pacePerKm(progress.paceSecondsPerKm), 'Avg Pace'),
+      (AppFormat.clockDuration(progress.durationSeconds), 'Duration'),
     ];
 
     return GridView.builder(

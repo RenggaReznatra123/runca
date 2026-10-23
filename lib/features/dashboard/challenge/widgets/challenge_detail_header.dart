@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:runca/config/app_assets.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
+import 'package:runca/utility/format_utils.dart';
 
 import '../models/challenge_model.dart';
 
@@ -12,7 +13,7 @@ class ChallengeDetailHeader extends StatelessWidget {
     required this.onBack,
   });
 
-  final ChallengeModel challenge;
+  final ChallengeDetail challenge;
   final VoidCallback onBack;
 
   @override
@@ -22,7 +23,7 @@ class ChallengeDetailHeader extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        _Banner(assetPath: challenge.bannerAsset),
+        _Banner(imageUrl: challenge.bannerUrl),
         // Gelap di bagian bawah supaya teks putih terbaca.
         DecoratedBox(
           decoration: BoxDecoration(
@@ -81,7 +82,7 @@ class ChallengeDetailHeader extends StatelessWidget {
                   Image.asset(AppAssets.placoin, width: 20, height: 20),
                   const SizedBox(width: 6),
                   Text(
-                    '${challenge.formattedReward} PC',
+                    '${AppFormat.thousands(challenge.rewardCoins)} PC',
                     maxLines: 1,
                     style: AppTypography.bodyMedium(
                       color: AppPalette.textWhitePrimary,
@@ -90,7 +91,7 @@ class ChallengeDetailHeader extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Text(
-                      challenge.timeLeft,
+                      AppFormat.timeLeft(challenge.endDate),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: AppTypography.bodyMedium(
@@ -109,22 +110,30 @@ class ChallengeDetailHeader extends StatelessWidget {
 }
 
 class _Banner extends StatelessWidget {
-  const _Banner({this.assetPath});
+  const _Banner({this.imageUrl});
 
-  final String? assetPath;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
-    final path = assetPath;
+    final path = imageUrl;
 
-    if (path == null) return const _BannerFallback();
+    if (path == null || path.isEmpty) return const _BannerFallback();
 
-    return Image.asset(
-      path,
-      fit: BoxFit.cover,
-      alignment: Alignment.center,
-      errorBuilder: (_, _, _) => const _BannerFallback(),
-    );
+    final image = path.startsWith('http')
+        ? Image.network(
+            path,
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+            errorBuilder: (_, _, _) => const _BannerFallback(),
+          )
+        : Image.asset(
+            path,
+            fit: BoxFit.cover,
+            alignment: Alignment.center,
+            errorBuilder: (_, _, _) => const _BannerFallback(),
+          );
+    return image;
   }
 }
 

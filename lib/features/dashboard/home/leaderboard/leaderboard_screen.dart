@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
+import 'package:runca/features/dashboard/activity/widgets/activity_state_view.dart';
 
 import 'cubit/leaderboard_cubit.dart';
 import 'cubit/leaderboard_state.dart';
@@ -38,6 +39,39 @@ class _LeaderboardView extends StatelessWidget {
         child: BlocBuilder<LeaderboardCubit, LeaderboardState>(
           builder: (context, state) {
             final runners = state.runners;
+            if (state.status == LeaderboardStatus.loading && runners.isEmpty) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: AppPalette.bgFillPrimary,
+                ),
+              );
+            }
+
+            if (state.status == LeaderboardStatus.failure && runners.isEmpty) {
+              return ActivityStateView(
+                leading: const DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppPalette.bgSurfacePrimary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: SizedBox(
+                    width: 104,
+                    height: 104,
+                    child: Icon(
+                      Icons.cloud_off_outlined,
+                      size: 44,
+                      color: AppPalette.bgFillPrimary,
+                    ),
+                  ),
+                ),
+                title: 'Unable to load leaderboard',
+                message:
+                    'We couldn’t load the leaderboard. Check your connection and try again.',
+                actionLabel: 'Try Again',
+                onAction: context.read<LeaderboardCubit>().loadLeaderboard,
+              );
+            }
+
             final currentUserIndex = runners.indexWhere(
               (runner) => runner.isCurrentUser,
             );
@@ -102,7 +136,7 @@ class _LeaderboardView extends StatelessWidget {
                                   ),
                                 ),
                                 Text(
-                                  '${runners.length + 16} runners',
+                                  '${state.totalRunners} runners',
                                   style: AppTypography.bodyMedium(
                                     color: _textSecondary,
                                   ).copyWith(fontSize: 14, height: 1.4),

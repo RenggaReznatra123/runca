@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:runca/ui/color.dart';
-import '../cubit/leaderboard_state.dart';
+import 'package:runca/utility/format_utils.dart';
+
+import '../models/leaderboard_model.dart';
+import 'leaderboard_avatar.dart';
 
 class TopRunners extends StatelessWidget {
   const TopRunners({super.key, required this.runners});
@@ -66,7 +69,7 @@ class TopRunners extends StatelessWidget {
                             FittedBox(
                               fit: BoxFit.scaleDown,
                               child: Text(
-                                runner.formattedDistance,
+                                '${AppFormat.distanceValue(runner.distanceKm)} km',
                                 style: const TextStyle(
                                   fontSize: 13,
                                   fontWeight: FontWeight.w700,
@@ -93,18 +96,9 @@ class TopRunners extends StatelessWidget {
                               ),
                             ),
 
-                          Container(
-                            width: avatarSize,
-                            height: avatarSize,
-                            decoration: const BoxDecoration(
-                              color: AppPalette.bgSurfaceNeutral,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.person_rounded,
-                              size: avatarSize * 0.65,
-                              color: AppPalette.iconNeutralSecondary,
-                            ),
+                          LeaderboardAvatar(
+                            imageUrl: runner.avatarUrl,
+                            size: avatarSize,
                           ),
                         ],
                       ),

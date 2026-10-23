@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:runca/config/app_assets.dart';
 import 'package:runca/ui/color.dart';
+import 'package:runca/utility/format_utils.dart';
 
 import '../../challenge/models/challenge_model.dart';
 
@@ -31,7 +32,7 @@ class ChallengeCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(9),
                   child: _ChallengeImage(
-                    imageAsset: challenge.imageAsset,
+                    imageUrl: challenge.imageUrl,
                   ),
                 ),
                 const SizedBox(width: 12),
@@ -70,7 +71,7 @@ class ChallengeCard extends StatelessWidget {
                           ),
                           const SizedBox(width: 5),
                           Text(
-                            '${challenge.formattedReward} PC',
+                            '${AppFormat.thousands(challenge.rewardCoins)} PC',
                             style: const TextStyle(
                               fontSize: 11,
                               color: AppPalette.textNeutralPrimary,
@@ -79,7 +80,7 @@ class ChallengeCard extends StatelessWidget {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              challenge.timeLeft,
+                              AppFormat.timeLeft(challenge.endDate),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -109,25 +110,34 @@ class ChallengeCard extends StatelessWidget {
 }
 
 class _ChallengeImage extends StatelessWidget {
-  const _ChallengeImage({required this.imageAsset});
+  const _ChallengeImage({required this.imageUrl});
 
-  final String? imageAsset;
+  final String? imageUrl;
 
   @override
   Widget build(BuildContext context) {
-    final path = imageAsset;
+    final path = imageUrl;
 
     if (path == null || path.isEmpty) {
       return const _ChallengeImageFallback();
     }
 
-    return Image.asset(
-      path,
-      width: 90,
-      height: 90,
-      fit: BoxFit.cover,
-      errorBuilder: (_, _, _) => const _ChallengeImageFallback(),
-    );
+    final image = path.startsWith('http')
+        ? Image.network(
+            path,
+            width: 90,
+            height: 90,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => const _ChallengeImageFallback(),
+          )
+        : Image.asset(
+            path,
+            width: 90,
+            height: 90,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => const _ChallengeImageFallback(),
+          );
+    return image;
   }
 }
 

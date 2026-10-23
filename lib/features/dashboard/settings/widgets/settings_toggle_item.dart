@@ -37,8 +37,8 @@ class SettingsToggleItem extends StatelessWidget {
                 child: Switch(
                   value: value,
                   onChanged: onChanged,
-                  activeTrackColor: const Color(0xFF0284C7),
-                  inactiveTrackColor: const Color(0xFFD1D5DB),
+                  activeTrackColor: AppPalette.profileAccent,
+                  inactiveTrackColor: AppPalette.borderDisabled,
                   activeThumbColor: Colors.white,
                   inactiveThumbColor: Colors.white,
                   trackOutlineColor: const WidgetStatePropertyAll(
@@ -51,7 +51,11 @@ class SettingsToggleItem extends StatelessWidget {
           ),
         ),
         if (showDivider)
-          const Divider(height: 1, thickness: 1, color: Color(0xFFEAECEF)),
+          const Divider(
+            height: 1,
+            thickness: 1,
+            color: AppPalette.borderNeutral,
+          ),
       ],
     );
   }

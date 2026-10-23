@@ -56,6 +56,10 @@ class AuthCubit extends Cubit<AuthState> {
     emit(AuthStateSuccess(user: null, accessToken: null, isDirector: false));
   }
 
+  void reset() {
+    emit(AuthInitial());
+  }
+
   // Tidak menggunakan FCM selama dummy auth.
   void updateFcmToken() {}
 }

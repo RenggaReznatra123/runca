@@ -1,14 +1,11 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
 
 class SettingsChoiceSheet {
   const SettingsChoiceSheet._();
-
-  static const Color _primaryBlue = Color(0xFF0284C7);
-  static const Color _textPrimary = Color(0xFF172033);
-  static const Color _textSecondary = Color(0xFF8293AD);
 
   static Future<String?> show({
     required BuildContext context,
@@ -48,7 +45,7 @@ class SettingsChoiceSheet {
                     width: 128,
                     height: 5,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFD5D9DE),
+                      color: AppPalette.borderDisabled,
                       borderRadius: BorderRadius.circular(10),
                     ),
                   ),
@@ -57,14 +54,14 @@ class SettingsChoiceSheet {
                 Text(
                   title,
                   style: AppTypography.titleLarge(
-                    color: _textPrimary,
+                    color: AppPalette.profileDarkText,
                   ).copyWith(fontSize: 22),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   description,
                   style: AppTypography.bodyMedium(
-                    color: _textSecondary,
+                    color: AppPalette.profileMutedText,
                   ).copyWith(height: 1.5),
                 ),
                 const SizedBox(height: 18),
@@ -75,8 +72,8 @@ class SettingsChoiceSheet {
                     padding: const EdgeInsets.only(bottom: 12),
                     child: Material(
                       color: isSelected
-                          ? _primaryBlue
-                          : const Color(0xFFF8F8F8),
+                          ? AppPalette.profileAccent
+                          : AppPalette.bgSurfaceNeutral,
                       borderRadius: BorderRadius.circular(15),
                       child: InkWell(
                         onTap: () {
@@ -97,7 +94,7 @@ class SettingsChoiceSheet {
                                 style: AppTypography.bodyMedium(
                                   color: isSelected
                                       ? Colors.white
-                                      : _textPrimary,
+                                      : AppPalette.profileDarkText,
                                 ).copyWith(
                                   fontSize: 15,
                                   fontWeight: isSelected

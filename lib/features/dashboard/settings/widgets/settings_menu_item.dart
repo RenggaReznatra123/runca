@@ -42,7 +42,7 @@ class SettingsMenuItem extends StatelessWidget {
                     Text(
                       value!,
                       style: AppTypography.bodyMedium(
-                        color: const Color(0xFF0284C7),
+                        color: AppPalette.profileAccent,
                       ).copyWith(fontSize: 14),
                     ),
                     const SizedBox(width: 10),
@@ -51,7 +51,7 @@ class SettingsMenuItem extends StatelessWidget {
                     const Icon(
                       Icons.chevron_right_rounded,
                       size: 23,
-                      color: Color(0xFF91A2BB),
+                      color: AppPalette.profileMutedIcon,
                     ),
                 ],
               ),
@@ -59,7 +59,11 @@ class SettingsMenuItem extends StatelessWidget {
           ),
         ),
         if (showDivider)
-          const Divider(height: 1, thickness: 1, color: Color(0xFFEAECEF)),
+          const Divider(
+            height: 1,
+            thickness: 1,
+            color: AppPalette.borderNeutral,
+          ),
       ],
     );
   }

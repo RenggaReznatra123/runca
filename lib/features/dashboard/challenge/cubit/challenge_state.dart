@@ -2,6 +2,8 @@ import '../models/challenge_model.dart';
 
 enum ChallengeTab { discover, active, history }
 
+enum ChallengeStatus { loading, success, failure }
+
 enum ChallengeFilter {
   all('All'),
   running('Running'),
@@ -12,47 +14,38 @@ enum ChallengeFilter {
 
   final String label;
 
-  bool matches(ChallengeType type) {
-    switch (this) {
-      case ChallengeFilter.all:
-        return true;
-      case ChallengeFilter.running:
-        return type == ChallengeType.running;
-      case ChallengeFilter.treadmill:
-        return type == ChallengeType.treadmill;
-      case ChallengeFilter.walking:
-        return type == ChallengeType.walking;
-    }
-  }
+  ChallengeType? get type => switch (this) {
+    ChallengeFilter.all => null,
+    ChallengeFilter.running => ChallengeType.running,
+    ChallengeFilter.treadmill => ChallengeType.treadmill,
+    ChallengeFilter.walking => ChallengeType.walking,
+  };
 }
 
 class ChallengeState {
   const ChallengeState({
+    this.status = ChallengeStatus.loading,
     this.selectedTab = ChallengeTab.discover,
     this.selectedFilter = ChallengeFilter.all,
     this.coinBalance = 0,
     this.challenges = const [],
   });
 
+  final ChallengeStatus status;
   final ChallengeTab selectedTab;
   final ChallengeFilter selectedFilter;
   final int coinBalance;
   final List<ChallengeModel> challenges;
 
-  /// Daftar yang tampil setelah filter chip diterapkan.
-  List<ChallengeModel> get visibleChallenges {
-    return challenges
-        .where((challenge) => selectedFilter.matches(challenge.type))
-        .toList(growable: false);
-  }
-
   ChallengeState copyWith({
+    ChallengeStatus? status,
     ChallengeTab? selectedTab,
     ChallengeFilter? selectedFilter,
     int? coinBalance,
     List<ChallengeModel>? challenges,
   }) {
     return ChallengeState(
+      status: status ?? this.status,
       selectedTab: selectedTab ?? this.selectedTab,
       selectedFilter: selectedFilter ?? this.selectedFilter,
       coinBalance: coinBalance ?? this.coinBalance,
