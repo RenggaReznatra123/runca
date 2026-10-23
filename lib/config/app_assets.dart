@@ -1,0 +1,30 @@
+/// Paths of bundled asset files.
+class AppAssets {
+  const AppAssets._();
+
+  // Splash
+  static const String splashLogo = 'assets/images/splash_logo.png';
+
+  // Onboarding
+  static const String onboardingBackground = 'assets/images/onboarding_bg.png';
+  static const String onboardingLogo = 'assets/images/onboarding_logo.png';
+
+  // Authentication
+  static const String googleLogo = 'assets/images/google_logo.svg';
+  static const String successIllustration = 'assets/images/succes.png';
+
+  // Challenge
+  static const String challengeImage = 'assets/images/challenge.png';
+
+  // Profile - Statistics
+  static const String placoin = 'assets/images/placoin.png';
+  static const String rank = 'assets/images/rank.png';
+
+  // Profile - Achievements
+  static const String first5K = 'assets/images/fisrt_5_k.png';
+  static const String tenKMilestone = 'assets/images/10k_milestone.png';
+  static const String halfMarathon = 'assets/images/half_marathon.png';
+  static const String sevenDayStreak = 'assets/images/7day_streak.png';
+  static const String tenRuns = 'assets/images/10_runs.png';
+  static const String lockedAchievement = 'assets/images/locked.png';
+}
