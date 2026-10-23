@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
 
 class SettingsSection extends StatelessWidget {
@@ -11,7 +12,7 @@ class SettingsSection extends StatelessWidget {
   final String title;
   final List<Widget> children;
 
-  static const Color _panelColor = Color(0xFFF8F8F8);
+  static const Color _panelColor = AppPalette.bgSurfaceNeutral;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +24,7 @@ class SettingsSection extends StatelessWidget {
           child: Text(
             title,
             style: AppTypography.bodySmall(
-              color: const Color(0xFF8293AD),
+              color: AppPalette.profileMutedText,
             ).copyWith(fontSize: 12),
           ),
         ),

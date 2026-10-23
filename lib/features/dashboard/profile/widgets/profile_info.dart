@@ -13,22 +13,12 @@ class ProfileInfo extends StatelessWidget {
   final ProfileModel profile;
   final VoidCallback onEditTap;
 
-  static const Color _buttonBorder = Color(0xFFC8D4E3);
-
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         ClipOval(
-          child: profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
-              ? Image.network(
-                  profile.avatarUrl!,
-                  width: 56,
-                  height: 56,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, _, _) => _avatarFallback(),
-                )
-              : _avatarFallback(),
+          child: _avatarImage(),
         ),
         const SizedBox(width: 14),
         Expanded(
@@ -66,7 +56,7 @@ class ProfileInfo extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 14),
             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             foregroundColor: AppPalette.textNeutralPrimary,
-            side: const BorderSide(color: _buttonBorder),
+            side: const BorderSide(color: AppPalette.profileSoftBorder),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(11),
             ),
@@ -82,11 +72,34 @@ class ProfileInfo extends StatelessWidget {
     );
   }
 
+  Widget _avatarImage() {
+    final path = profile.avatarUrl;
+    if (path == null || path.isEmpty) return _avatarFallback();
+
+    final image = path.startsWith('http')
+        ? Image.network(
+            path,
+            width: 56,
+            height: 56,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => _avatarFallback(),
+          )
+        : Image.asset(
+            path,
+            width: 56,
+            height: 56,
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => _avatarFallback(),
+          );
+
+    return image;
+  }
+
   Widget _avatarFallback() {
     return Container(
       width: 56,
       height: 56,
-      color: const Color(0xFFF1F1F1),
+      color: AppPalette.bgButtonOutlinedHover,
       alignment: Alignment.center,
       child: const Icon(
         Icons.person_outline_rounded,

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/shared_view/empty_view.dart';
+import 'package:runca/features/dashboard/activity/widgets/activity_state_view.dart';
 import 'package:runca/ui/typography.dart';
 
 import 'challenge_detail_screen.dart';
@@ -82,7 +83,38 @@ class _DiscoverTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<ChallengeCubit>();
-    final challenges = state.visibleChallenges;
+    final challenges = state.challenges;
+
+    if (state.status == ChallengeStatus.loading && challenges.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppPalette.bgFillPrimary),
+      );
+    }
+
+    if (state.status == ChallengeStatus.failure) {
+      return ActivityStateView(
+        leading: const DecoratedBox(
+          decoration: BoxDecoration(
+            color: AppPalette.bgSurfacePrimary,
+            shape: BoxShape.circle,
+          ),
+          child: SizedBox(
+            width: 104,
+            height: 104,
+            child: Icon(
+              Icons.cloud_off_outlined,
+              size: 44,
+              color: AppPalette.bgFillPrimary,
+            ),
+          ),
+        ),
+        title: 'Unable to load challenges',
+        message:
+            'We couldn’t load challenges. Check your connection and try again.',
+        actionLabel: 'Try Again',
+        onAction: cubit.loadChallenges,
+      );
+    }
 
     return CustomScrollView(
       key: const PageStorageKey<String>('challenge_discover_scroll'),
@@ -118,7 +150,7 @@ class _DiscoverTab extends StatelessWidget {
                     Navigator.of(context).push(
                       MaterialPageRoute<void>(
                         builder: (_) =>
-                            ChallengeDetailScreen(challenge: challenge),
+                            ChallengeDetailScreen(challengeId: challenge.id),
                       ),
                     );
                   },

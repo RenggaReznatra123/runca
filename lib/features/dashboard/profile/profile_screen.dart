@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:runca/features/dashboard/settings/settings_screen.dart';
 import 'package:runca/config/app_assets.dart';
-import 'package:runca/config/service_locator.dart';
 import 'package:runca/features/dashboard/profile/cubit/profile_cubit.dart';
 import 'package:runca/features/dashboard/profile/cubit/profile_state.dart';
 import 'package:runca/features/dashboard/profile/widgets/profile_achievements.dart';
@@ -13,7 +12,7 @@ import 'package:runca/features/dashboard/profile/widgets/profile_vouchers.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
 import 'package:runca/utility/format_utils.dart';
-import 'package:runca/config/service_locator.dart';
+import 'package:runca/features/dashboard/home/leaderboard/leaderboard_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -143,7 +142,14 @@ class ProfileScreen extends StatelessWidget {
                                     ? '${profile.rank}'
                                     : '-',
                                 imagePath: AppAssets.rank,
-                                onTap: () => _showUnavailable(context, 'Rank'),
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) =>
+                                          const LeaderboardScreen(),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                           ],

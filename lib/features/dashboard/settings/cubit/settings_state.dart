@@ -1,29 +1,25 @@
+import '../models/app_settings.dart';
 
 class SettingsState {
   const SettingsState({
-    this.language = 'English (US)',
-    this.units = 'Metric (km)',
-    this.notificationsEnabled = true,
-    this.darkModeEnabled = true,
+    this.settings = const AppSettings(),
+    this.isLoggingOut = false,
+    this.hasError = false,
   });
 
-  final String language;
-  final String units;
-  final bool notificationsEnabled;
-  final bool darkModeEnabled;
+  final AppSettings settings;
+  final bool isLoggingOut;
+  final bool hasError;
 
   SettingsState copyWith({
-    String? language,
-    String? units,
-    bool? notificationsEnabled,
-    bool? darkModeEnabled,
+    AppSettings? settings,
+    bool? isLoggingOut,
+    bool? hasError,
   }) {
     return SettingsState(
-      language: language ?? this.language,
-      units: units ?? this.units,
-      notificationsEnabled:
-          notificationsEnabled ?? this.notificationsEnabled,
-      darkModeEnabled: darkModeEnabled ?? this.darkModeEnabled,
+      settings: settings ?? this.settings,
+      isLoggingOut: isLoggingOut ?? this.isLoggingOut,
+      hasError: hasError ?? this.hasError,
     );
   }
 }

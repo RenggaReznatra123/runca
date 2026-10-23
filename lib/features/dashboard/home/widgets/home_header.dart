@@ -4,9 +4,12 @@ import 'package:runca/ui/color.dart';
 import 'package:runca/features/dashboard/cubit/dashboard_cubit.dart';
 import 'package:runca/features/dashboard/home/leaderboard/leaderboard_screen.dart';
 import 'package:runca/features/dashboard/home/notifications/notifications_screen.dart';
+import 'package:runca/utility/format_utils.dart';
 
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key});
+  const HomeHeader({super.key, required this.name});
+
+  final String name;
 
   @override
   Widget build(BuildContext context) {
@@ -26,12 +29,12 @@ class HomeHeader extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Hi, Dede',
+                'Hi, ${AppFormat.firstName(name)}',
                 style: TextStyle(
                   fontSize: 14,
                   color: AppPalette.textNeutralSecondary,

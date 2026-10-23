@@ -14,8 +14,7 @@ class ProfileAchievements extends StatelessWidget {
   final List<AchievementModel> achievements;
   final VoidCallback onSeeAllTap;
 
-  static const Color _cardColor = Color(0xFFF8F8F8);
-  static const Color _accentBlue = Color(0xFF0284C7);
+  static const Color _cardColor = AppPalette.bgSurfaceNeutral;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +39,7 @@ class ProfileAchievements extends StatelessWidget {
                 child: Text(
                   'See all',
                   style: AppTypography.bodySmall(
-                    color: _accentBlue,
+                    color: AppPalette.profileAccent,
                   ).copyWith(fontSize: 14),
                 ),
               ),
@@ -90,7 +89,7 @@ class _AchievementCard extends StatelessWidget {
   final AchievementModel achievement;
   final String? imagePath;
 
-  static const Color _cardColor = Color(0xFFF8F8F8);
+  static const Color _cardColor = AppPalette.bgSurfaceNeutral;
 
   @override
   Widget build(BuildContext context) {
@@ -105,15 +104,7 @@ class _AchievementCard extends StatelessWidget {
         children: [
           Expanded(
             child: Center(
-              child: imagePath != null && imagePath!.isNotEmpty
-                  ? Image.asset(
-                      imagePath!,
-                      width: 82,
-                      height: 82,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => _medalFallback(),
-                    )
-                  : _medalFallback(),
+              child: _achievementImage(),
             ),
           ),
           const SizedBox(height: 5),
@@ -135,7 +126,7 @@ class _AchievementCard extends StatelessWidget {
           ),
           const SizedBox(height: 3),
           Text(
-            AppFormat.fullDate(achievement.completedAt),
+            AppFormat.shortDate(achievement.completedAt),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             style: AppTypography.bodySmall(
@@ -147,11 +138,34 @@ class _AchievementCard extends StatelessWidget {
     );
   }
 
+  Widget _achievementImage() {
+    final path = imagePath;
+    if (path == null || path.isEmpty) return _medalFallback();
+
+    final image = path.startsWith('http')
+        ? Image.network(
+            path,
+            width: 82,
+            height: 82,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => _medalFallback(),
+          )
+        : Image.asset(
+            path,
+            width: 82,
+            height: 82,
+            fit: BoxFit.contain,
+            errorBuilder: (_, _, _) => _medalFallback(),
+          );
+
+    return image;
+  }
+
   Widget _medalFallback() {
     return const Icon(
       Icons.workspace_premium_rounded,
       size: 54,
-      color: Color(0xFFF5B82E),
+      color: AppPalette.achievementGold,
     );
   }
 }

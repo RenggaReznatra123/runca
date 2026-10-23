@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:runca/ui/color.dart';
-import '../cubit/leaderboard_state.dart';
+import 'package:runca/utility/format_utils.dart';
+
+import '../models/leaderboard_model.dart';
+import 'leaderboard_avatar.dart';
 
 class CurrentUserRank extends StatelessWidget {
   const CurrentUserRank({super.key, required this.runner});
@@ -25,18 +28,9 @@ class CurrentUserRank extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: const BoxDecoration(
-              color: AppPalette.bgSurfaceNeutral,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.person_rounded,
-              size: 29,
-              color: AppPalette.iconNeutralSecondary,
-            ),
+          LeaderboardAvatar(
+            imageUrl: runner.avatarUrl,
+            size: 44,
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -52,7 +46,8 @@ class CurrentUserRank extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '#${runner.rank} · ${runner.formattedDistance}',
+                  '#${runner.rank} · '
+                  '${AppFormat.distanceValue(runner.distanceKm)} km',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,

@@ -5,11 +5,13 @@ import 'package:runca/features/dashboard/activity/cubit/activity_state.dart';
 import 'package:runca/features/dashboard/cubit/dashboard_cubit.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
+import 'package:runca/utility/format_utils.dart';
 
 import 'cubit/notifications_cubit.dart';
 import 'cubit/notifications_state.dart';
 import 'models/notification_model.dart';
 import 'widgets/notification_item.dart';
+import 'widgets/notification_presentation.dart';
 import 'widgets/notification_section.dart';
 
 class NotificationsScreen extends StatelessWidget {
@@ -18,7 +20,7 @@ class NotificationsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => NotificationsCubit()..loadNotifications(),
+      create: (_) => NotificationsCubit(),
       child: const _NotificationsView(),
     );
   }
@@ -29,10 +31,11 @@ class _NotificationsView extends StatelessWidget {
 
   List<NotificationModel> _getNotifications(
     List<NotificationModel> notifications,
-    NotificationType type,
+    _NotificationGroup group,
+    DateTime now,
   ) {
     return notifications
-        .where((notification) => notification.type == type)
+        .where((notification) => _groupOf(notification.createdAt, now) == group)
         .toList(growable: false);
   }
 
@@ -60,7 +63,7 @@ class _NotificationsView extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        state.errorMessage ?? 'Gagal memuat notifikasi.',
+                        'Unable to load notifications. Check your connection and try again.',
                         textAlign: TextAlign.center,
                         style: AppTypography.bodyMedium(
                           color: AppPalette.textNeutralPrimary,
@@ -73,7 +76,7 @@ class _NotificationsView extends StatelessWidget {
                               .read<NotificationsCubit>()
                               .loadNotifications();
                         },
-                        child: const Text('Coba lagi'),
+                        child: const Text('Try Again'),
                       ),
                     ],
                   ),
@@ -81,25 +84,21 @@ class _NotificationsView extends StatelessWidget {
               );
             }
 
-            final today = [
-              ..._getNotifications(
-                state.notifications,
-                NotificationType.reminder,
-              ),
-              ..._getNotifications(
-                state.notifications,
-                NotificationType.streak,
-              ),
-            ];
-
+            final now = DateTime.now();
+            final today = _getNotifications(
+              state.notifications,
+              _NotificationGroup.today,
+              now,
+            );
             final yesterday = _getNotifications(
               state.notifications,
-              NotificationType.activity,
+              _NotificationGroup.yesterday,
+              now,
             );
-
             final thisWeek = _getNotifications(
               state.notifications,
-              NotificationType.weeklyProgress,
+              _NotificationGroup.thisWeek,
+              now,
             );
 
             return CustomScrollView(
@@ -117,7 +116,10 @@ class _NotificationsView extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      const NotificationSection(title: 'Today', date: 'Sep 24'),
+                      NotificationSection(
+                        title: 'Today',
+                        date: AppFormat.notificationSectionDate(now),
+                      ),
                       const SizedBox(height: 28),
 
                       ...today.expand(
@@ -134,9 +136,11 @@ class _NotificationsView extends StatelessWidget {
 
                       const SizedBox(height: 26),
 
-                      const NotificationSection(
+                      NotificationSection(
                         title: 'Yesterday',
-                        date: 'Sep 23',
+                        date: AppFormat.notificationSectionDate(
+                          now.subtract(const Duration(days: 1)),
+                        ),
                       ),
                       const SizedBox(height: 50),
 
@@ -154,9 +158,9 @@ class _NotificationsView extends StatelessWidget {
 
                       const SizedBox(height: 30),
 
-                      const NotificationSection(
+                      NotificationSection(
                         title: 'This Week',
-                        date: 'Sep 21–24',
+                        date: AppFormat.notificationWeekRange(now),
                       ),
                       const SizedBox(height: 50),
 
@@ -197,7 +201,7 @@ class _NotificationsView extends StatelessWidget {
   }
 
   void _handleAction(BuildContext context, NotificationModel notification) {
-    final actionLabel = notification.actionLabel;
+    final actionLabel = notification.type.actionLabel;
 
     if (actionLabel == null || actionLabel.isEmpty) {
       return;
@@ -223,6 +227,23 @@ class _NotificationsView extends StatelessWidget {
     context.read<DashboardCubit>().openActivity(tab);
     Navigator.of(context).maybePop();
   }
+}
+
+enum _NotificationGroup { today, yesterday, thisWeek }
+
+_NotificationGroup? _groupOf(DateTime date, DateTime now) {
+  final day = DateTime(date.year, date.month, date.day);
+  final today = DateTime(now.year, now.month, now.day);
+  if (day == today) return _NotificationGroup.today;
+  if (day == today.subtract(const Duration(days: 1))) {
+    return _NotificationGroup.yesterday;
+  }
+
+  final weekStart = today.subtract(Duration(days: today.weekday - 1));
+  if (!day.isBefore(weekStart) && day.isBefore(today)) {
+    return _NotificationGroup.thisWeek;
+  }
+  return null;
 }
 
 class _NotificationsHeader extends StatelessWidget {

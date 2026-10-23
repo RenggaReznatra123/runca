@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:runca/features/dashboard/home/models/home_model.dart';
 import 'package:runca/ui/color.dart';
+import 'package:runca/utility/format_utils.dart';
 
 class WeeklyStats extends StatelessWidget {
-  const WeeklyStats({super.key, required this.isOutdoor});
+  const WeeklyStats({super.key, required this.stats});
 
-  final bool isOutdoor;
+  final WeeklyStatsData stats;
 
   @override
   Widget build(BuildContext context) {
@@ -17,10 +19,12 @@ class WeeklyStats extends StatelessWidget {
                 icon: Icons.route_outlined,
                 iconColor: AppPalette.bgFillPrimary,
                 title: 'Total Distance',
-                value: '0.0',
+                value: AppFormat.distanceValue(stats.distanceKm),
                 unit: 'km',
-                comparison: '↑ 0.0 vs last week',
-                positive: true,
+                comparison:
+                    '${stats.distanceIncreased ? '↑' : '↓'} '
+                    '${AppFormat.distanceValue(stats.distanceChangeKm)} vs last week',
+                positive: stats.distanceIncreased,
               ),
             ),
             const SizedBox(width: 10),
@@ -29,10 +33,12 @@ class WeeklyStats extends StatelessWidget {
                 icon: Icons.local_fire_department_rounded,
                 iconColor: AppPalette.textWarning,
                 title: 'Calories',
-                value: '0',
+                value: AppFormat.thousands(stats.calories),
                 unit: 'kcal',
-                comparison: '↓ 0 vs last week',
-                positive: false,
+                comparison:
+                    '${stats.caloriesIncreased ? '↑' : '↓'} '
+                    '${AppFormat.thousands(stats.caloriesChange)} vs last week',
+                positive: stats.caloriesIncreased,
               ),
             ),
           ],
@@ -45,10 +51,14 @@ class WeeklyStats extends StatelessWidget {
                 icon: Icons.bolt_rounded,
                 iconColor: AppPalette.textInfo,
                 title: 'Avg Pace',
-                value: '-:-',
+                value: stats.paceSecondsPerKm == null
+                    ? '-:-'
+                    : AppFormat.pace(stats.paceSecondsPerKm!),
                 unit: '/km',
-                comparison: '↑ 0% vs last week',
-                positive: true,
+                comparison:
+                    '${stats.paceIncreased ? '↑' : '↓'} '
+                    '${AppFormat.change(stats.paceChangePercent, isPercent: true)} vs last week',
+                positive: stats.paceIncreased,
               ),
             ),
             const SizedBox(width: 10),
@@ -57,10 +67,12 @@ class WeeklyStats extends StatelessWidget {
                 icon: Icons.access_time_filled_rounded,
                 iconColor: AppPalette.bgFillPrimary,
                 title: 'Duration',
-                value: '00:00:00',
+                value: AppFormat.clockDuration(stats.durationSeconds),
                 unit: '',
-                comparison: '↓ 0m vs last week',
-                positive: false,
+                comparison:
+                    '${stats.durationIncreased ? '↑' : '↓'} '
+                    '${stats.durationChangeMinutes}m vs last week',
+                positive: stats.durationIncreased,
               ),
             ),
           ],

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'package:runca/ui/color.dart';
-import '../cubit/leaderboard_state.dart';
+
+import '../models/leaderboard_model.dart';
 
 class LeaderboardPeriodSelector extends StatelessWidget {
   const LeaderboardPeriodSelector({

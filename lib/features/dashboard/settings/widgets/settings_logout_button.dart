@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
 
 class SettingsLogoutButton extends StatelessWidget {
@@ -9,7 +10,7 @@ class SettingsLogoutButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFFFFF0F0),
+      color: AppPalette.profileDangerBackground,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
         onTap: onTap,
@@ -24,7 +25,7 @@ class SettingsLogoutButton extends StatelessWidget {
               child: Text(
                 'Logout',
                 style: AppTypography.bodyMedium(
-                  color: const Color(0xFFFF3030),
+                  color: AppPalette.profileDangerText,
                 ).copyWith(fontSize: 16),
               ),
             ),

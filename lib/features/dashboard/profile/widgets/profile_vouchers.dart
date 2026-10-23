@@ -10,7 +10,7 @@ class ProfileVouchers extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: const Color(0xFFF8F8F8),
+      color: AppPalette.bgSurfaceNeutral,
       borderRadius: BorderRadius.circular(15),
       child: InkWell(
         onTap: onTap,
@@ -32,7 +32,7 @@ class ProfileVouchers extends StatelessWidget {
                 const Icon(
                   Icons.chevron_right_rounded,
                   size: 23,
-                  color: Color(0xFF91A2BB),
+                  color: AppPalette.profileMutedIcon,
                 ),
               ],
             ),

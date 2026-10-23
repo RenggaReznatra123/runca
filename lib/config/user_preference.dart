@@ -30,6 +30,11 @@ class UserPreference {
 
   String? getToken() => prefs.getString('token');
 
+  Future<void> clearSession() async {
+    await prefs.remove('token');
+    await prefs.remove('user');
+  }
+
   bool get isLoggedIn {
     final token = getToken();
     return token != null && token.isNotEmpty;

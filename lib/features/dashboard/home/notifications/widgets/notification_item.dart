@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'package:runca/ui/color.dart';
-import 'package:runca/config/app_assets.dart';
 import 'package:runca/ui/typography.dart';
+import 'package:runca/utility/format_utils.dart';
 
 import '../models/notification_model.dart';
+import 'notification_presentation.dart';
 import 'weekly_progress_card.dart';
 
 class NotificationItem extends StatelessWidget {
@@ -73,13 +74,13 @@ class NotificationItem extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        notification.time,
+                        AppFormat.notificationTime(notification.createdAt),
                         style: AppTypography.bodyMedium(
                           color: _secondaryColor,
                         ).copyWith(fontSize: 12, height: 1.4),
                       ),
                     ),
-                    if (notification.actionLabel != null) ...[
+                    if (notification.type.actionLabel != null) ...[
                       const SizedBox(width: 8),
                       GestureDetector(
                         onTap: onAction,
@@ -87,7 +88,7 @@ class NotificationItem extends StatelessWidget {
                         child: Padding(
                           padding: const EdgeInsets.symmetric(vertical: 2),
                           child: Text(
-                            notification.actionLabel!,
+                            notification.type.actionLabel!,
                             style:
                                 AppTypography.titleSmall(
                                   color: _primaryColor,
@@ -119,26 +120,40 @@ class _NotificationIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (notification.type == NotificationType.reminder) {
-      return ClipOval(
-        child: Image.asset(
-          AppAssets.challengeImage,
-          width: 48,
-          height: 48,
-          fit: BoxFit.cover,
-          errorBuilder: (_, _, _) => _fallbackIcon(),
-        ),
-      );
+      final imagePath = notification.imageUrl;
+      if (imagePath == null || imagePath.isEmpty) return _fallbackIcon();
+
+      final image = imagePath.startsWith('http')
+          ? Image.network(
+              imagePath,
+              width: 48,
+              height: 48,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => _fallbackIcon(),
+            )
+          : Image.asset(
+              imagePath,
+              width: 48,
+              height: 48,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => _fallbackIcon(),
+            );
+      return ClipOval(child: image);
     }
 
     return Container(
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: notification.iconColor,
+        color: notification.type.iconColor,
         shape: BoxShape.circle,
       ),
       alignment: Alignment.center,
-      child: Icon(notification.icon, color: AppPalette.baseWhite, size: 25),
+      child: Icon(
+        notification.type.icon,
+        color: AppPalette.baseWhite,
+        size: 25,
+      ),
     );
   }
 
@@ -146,9 +161,13 @@ class _NotificationIcon extends StatelessWidget {
     return Container(
       width: 48,
       height: 48,
-      color: notification.iconColor,
+      color: notification.type.iconColor,
       alignment: Alignment.center,
-      child: Icon(notification.icon, color: AppPalette.baseWhite, size: 25),
+      child: Icon(
+        notification.type.icon,
+        color: AppPalette.baseWhite,
+        size: 25,
+      ),
     );
   }
 }
@@ -197,14 +216,16 @@ class _ActivitySummary extends StatelessWidget {
               ),
               const SizedBox(height: 3),
               Text(
-                '${activity.distance} · ${activity.duration}',
+                '${AppFormat.distanceKm(activity.distanceKm)} · '
+                '${AppFormat.duration(activity.durationSeconds)}',
                 style: AppTypography.bodyMedium(
                   color: _secondaryColor,
                 ).copyWith(fontSize: 11.5),
               ),
               const SizedBox(height: 2),
               Text(
-                '${activity.pace} · ${activity.calories}',
+                '${AppFormat.pacePerKm(activity.paceSecondsPerKm)} · '
+                '${AppFormat.calories(activity.calories)}',
                 style: AppTypography.bodyMedium(
                   color: _secondaryColor,
                 ).copyWith(fontSize: 11.5),

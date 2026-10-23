@@ -1,82 +1,55 @@
-import 'package:flutter/material.dart';
-
-import 'package:runca/ui/color.dart';
-
 enum NotificationType { reminder, streak, activity, weeklyProgress }
 
 class NotificationModel {
   const NotificationModel({
+    required this.id,
     required this.title,
     required this.description,
-    required this.time,
+    required this.createdAt,
     required this.type,
-    this.actionLabel,
+    this.imageUrl,
+    this.highlighted = false,
     this.activity,
     this.progress,
-    this.highlighted = false,
   });
 
+  final String id;
   final String title;
   final String description;
-  final String time;
+  final DateTime createdAt;
   final NotificationType type;
-  final String? actionLabel;
+  final bool highlighted;
+  final String? imageUrl;
   final ActivitySummary? activity;
   final WeeklyProgress? progress;
-  final bool highlighted;
-
-  IconData get icon {
-    switch (type) {
-      case NotificationType.reminder:
-        return Icons.directions_run_rounded;
-      case NotificationType.streak:
-        return Icons.local_fire_department_rounded;
-      case NotificationType.activity:
-        return Icons.directions_run_rounded;
-      case NotificationType.weeklyProgress:
-        return Icons.show_chart_rounded;
-    }
-  }
-
-  Color get iconColor {
-    switch (type) {
-      case NotificationType.reminder:
-        return AppPalette.bgFillSecondary;
-      case NotificationType.streak:
-        return AppPalette.textWarning;
-      case NotificationType.activity:
-      case NotificationType.weeklyProgress:
-        return AppPalette.bgFillPrimary;
-    }
-  }
 }
 
 class ActivitySummary {
   const ActivitySummary({
     required this.title,
-    required this.distance,
-    required this.duration,
-    required this.pace,
+    required this.distanceKm,
+    required this.durationSeconds,
+    required this.paceSecondsPerKm,
     required this.calories,
   });
 
   final String title;
-  final String distance;
-  final String duration;
-  final String pace;
-  final String calories;
+  final double distanceKm;
+  final int durationSeconds;
+  final int paceSecondsPerKm;
+  final int calories;
 }
 
 class WeeklyProgress {
   const WeeklyProgress({
-    required this.distance,
+    required this.distanceKm,
     required this.calories,
-    required this.pace,
-    required this.duration,
+    required this.paceSecondsPerKm,
+    required this.durationSeconds,
   });
 
-  final String distance;
-  final String calories;
-  final String pace;
-  final String duration;
+  final double distanceKm;
+  final int calories;
+  final int paceSecondsPerKm;
+  final int durationSeconds;
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:runca/config/app_assets.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
+import 'package:runca/utility/format_utils.dart';
 
 import '../models/challenge_model.dart';
 
@@ -39,7 +40,7 @@ class ChallengeItem extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _ChallengeImage(assetPath: challenge.imageAsset),
+                _ChallengeImage(imageUrl: challenge.imageUrl),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Column(
@@ -77,7 +78,7 @@ class ChallengeItem extends StatelessWidget {
                           Image.asset(AppAssets.placoin, width: 16, height: 16),
                           const SizedBox(width: 8),
                           Text(
-                            '+${challenge.formattedReward} PC',
+                            '+${AppFormat.thousands(challenge.rewardCoins)} PC',
                             maxLines: 1,
                             style: AppTypography.bodySmall(
                               color: AppPalette.textNeutralPrimary,
@@ -86,7 +87,7 @@ class ChallengeItem extends StatelessWidget {
                           const SizedBox(width: 16),
                           Expanded(
                             child: Text(
-                              challenge.timeLeft,
+                              AppFormat.timeLeft(challenge.endDate),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: AppTypography.bodySmall(
@@ -109,20 +110,28 @@ class ChallengeItem extends StatelessWidget {
 }
 
 class _ChallengeImage extends StatelessWidget {
-  const _ChallengeImage({this.assetPath});
+  const _ChallengeImage({this.imageUrl});
 
-  final String? assetPath;
+  final String? imageUrl;
 
   static const double _size = 90;
 
   @override
   Widget build(BuildContext context) {
-    final path = assetPath;
+    final path = imageUrl;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(8),
-      child: path == null
+      child: path == null || path.isEmpty
           ? _placeholder()
+          : path.startsWith('http')
+          ? Image.network(
+              path,
+              width: _size,
+              height: _size,
+              fit: BoxFit.cover,
+              errorBuilder: (_, _, _) => _placeholder(),
+            )
           : Image.asset(
               path,
               width: _size,

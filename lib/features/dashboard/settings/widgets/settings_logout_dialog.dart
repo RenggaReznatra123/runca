@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 
+import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
 
 class SettingsLogoutDialog {
@@ -27,7 +28,7 @@ class SettingsLogoutDialog {
                   'Log Out of Plarita?',
                   textAlign: TextAlign.center,
                   style: AppTypography.titleLarge(
-                    color: const Color(0xFF343943),
+                    color: AppPalette.settingsDarkText,
                   ).copyWith(fontSize: 23),
                 ),
                 const SizedBox(height: 18),
@@ -36,7 +37,7 @@ class SettingsLogoutDialog {
                   'running activities and PlaCoins will remain safe.',
                   textAlign: TextAlign.center,
                   style: AppTypography.bodyMedium(
-                    color: const Color(0xFF8293AD),
+                    color: AppPalette.profileMutedText,
                   ).copyWith(
                     fontSize: 14,
                     height: 1.8,
@@ -53,9 +54,9 @@ class SettingsLogoutDialog {
                             Navigator.of(dialogContext).pop(false);
                           },
                           style: OutlinedButton.styleFrom(
-                            foregroundColor: const Color(0xFF343943),
+                            foregroundColor: AppPalette.settingsDarkText,
                             side: const BorderSide(
-                              color: Color(0xFFC7D3E0),
+                              color: AppPalette.profileSoftBorder,
                             ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
@@ -64,7 +65,7 @@ class SettingsLogoutDialog {
                           child: Text(
                             'Cancel',
                             style: AppTypography.bodyMedium(
-                              color: const Color(0xFF343943),
+                              color: AppPalette.settingsDarkText,
                             ).copyWith(fontSize: 16),
                           ),
                         ),
@@ -80,7 +81,7 @@ class SettingsLogoutDialog {
                           },
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
-                            backgroundColor: const Color(0xFFFF3838),
+                            backgroundColor: AppPalette.settingsDangerButton,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),

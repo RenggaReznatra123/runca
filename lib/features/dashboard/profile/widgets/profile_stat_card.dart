@@ -16,7 +16,7 @@ class ProfileStatCard extends StatelessWidget {
   final String imagePath;
   final VoidCallback onTap;
 
-  static const Color _cardColor = Color(0xFFF8F8F8);
+  static const Color _cardColor = AppPalette.bgSurfaceNeutral;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class ProfileStatCard extends StatelessWidget {
                     const Icon(
                       Icons.chevron_right_rounded,
                       size: 20,
-                      color: Color(0xFF8293AD),
+                      color: AppPalette.profileMutedText,
                     ),
                   ],
                 ),
