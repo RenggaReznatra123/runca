@@ -5,6 +5,7 @@ import 'package:runca/ui/color.dart';
 import 'package:runca/ui/shared_view/empty_view.dart';
 import 'package:runca/features/dashboard/activity/widgets/activity_state_view.dart';
 import 'package:runca/ui/typography.dart';
+import 'package:runca/features/dashboard/rewards/rewards_screen.dart';
 
 import 'challenge_detail_screen.dart';
 import 'cubit/challenge_cubit.dart';
@@ -40,7 +41,14 @@ class _ChallengeView extends StatelessWidget {
             BlocSelector<ChallengeCubit, ChallengeState, int>(
               selector: (state) => state.coinBalance,
               builder: (context, coinBalance) {
-                return ChallengeHeader(coinBalance: coinBalance);
+                return ChallengeHeader(
+                  coinBalance: coinBalance,
+                  onCoinTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(builder: (_) => RewardsScreen()),
+                    );
+                  },
+                );
               },
             ),
             const SizedBox(height: 16),
@@ -174,9 +182,7 @@ class _ComingSoonTab extends StatelessWidget {
     return Center(
       child: Text(
         '$label coming soon.',
-        style: AppTypography.bodyMedium(
-          color: AppPalette.textNeutralSecondary,
-        ),
+        style: AppTypography.bodyMedium(color: AppPalette.textNeutralSecondary),
       ),
     );
   }

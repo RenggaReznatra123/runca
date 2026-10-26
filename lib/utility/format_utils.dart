@@ -139,6 +139,11 @@ class AppFormat {
     return parts.isEmpty || parts.first.isEmpty ? 'there' : parts.first;
   }
 
+    /// 48 -> '48 vouchers', 1 -> '1 voucher'
+  static String voucherCount(int count) {
+    return count == 1 ? '1 voucher' : '$count vouchers';
+  }
+
   static String weekdayShort(DateTime date) {
     return DateFormat('EEE', 'en_US').format(date);
   }

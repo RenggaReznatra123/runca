@@ -27,4 +27,8 @@ class AppAssets {
   static const String sevenDayStreak = 'assets/images/7day_streak.png';
   static const String tenRuns = 'assets/images/10_runs.png';
   static const String lockedAchievement = 'assets/images/locked.png';
+
+  // Rewards
+  static const String gacoan = 'assets/images/gacoan.jpg';
+  static const String kopken = 'assets/images/kopken.jpg';
 }
