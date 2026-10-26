@@ -4,6 +4,7 @@ import 'package:runca/data/dummy/dummy_activity_repository.dart';
 import 'package:runca/data/dummy/dummy_challenge_repository.dart';
 import 'package:runca/data/dummy/dummy_progress_repository.dart';
 import 'package:runca/data/dummy/dummy_profile_repository.dart';
+import 'package:runca/data/dummy/dummy_rewards_repository.dart';
 import 'package:runca/data/dummy/dummy_settings_repository.dart';
 import 'package:runca/data/dummy/dummy_notifications_repository.dart';
 import 'package:runca/data/dummy/dummy_leaderboard_repository.dart';
@@ -13,6 +14,7 @@ import 'package:runca/repository/activity_repository.dart';
 import 'package:runca/repository/challenge_repository.dart';
 import 'package:runca/repository/progress_repository.dart';
 import 'package:runca/repository/profile_repository.dart';
+import 'package:runca/repository/rewards_repository.dart';
 import 'package:runca/repository/settings_repository.dart';
 import 'package:runca/repository/notifications_repository.dart';
 import 'package:runca/repository/leaderboard_repository.dart';
@@ -40,6 +42,10 @@ void registerRepositories(GetIt locator) {
     () => DummyProfileRepository(),
   );
 
+  locator.registerLazySingleton<RewardsRepository>(
+    () => DummyRewardsRepository(),
+  );
+
   // Ganti implementasi ini ke repository API saat backend tersedia.
   locator.registerLazySingleton<SettingsRepository>(
     () => DummySettingsRepository(locator.get<UserPreference>()),
@@ -53,7 +59,5 @@ void registerRepositories(GetIt locator) {
     () => DummyLeaderboardRepository(),
   );
 
-  locator.registerLazySingleton<HomeRepository>(
-    () => DummyHomeRepository(),
-  );
+  locator.registerLazySingleton<HomeRepository>(() => DummyHomeRepository());
 }

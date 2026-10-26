@@ -13,6 +13,7 @@ import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
 import 'package:runca/utility/format_utils.dart';
 import 'package:runca/features/dashboard/home/leaderboard/leaderboard_screen.dart';
+import 'package:runca/features/dashboard/rewards/rewards_screen.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -32,7 +33,7 @@ class ProfileScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-            create: (_) => ProfileCubit(),
+      create: (_) => ProfileCubit(),
       child: Builder(
         builder: (context) {
           return Scaffold(
@@ -130,8 +131,13 @@ class ProfileScreen extends StatelessWidget {
                                 title: 'Your PlaCoins',
                                 value: AppFormat.thousands(profile.coins),
                                 imagePath: AppAssets.placoin,
-                                onTap: () =>
-                                    _showUnavailable(context, 'PlaCoins'),
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute<void>(
+                                      builder: (_) => const RewardsScreen(),
+                                    ),
+                                  );
+                                },
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -145,8 +151,7 @@ class ProfileScreen extends StatelessWidget {
                                 onTap: () {
                                   Navigator.of(context).push(
                                     MaterialPageRoute<void>(
-                                      builder: (_) =>
-                                          const LeaderboardScreen(),
+                                      builder: (_) => const LeaderboardScreen(),
                                     ),
                                   );
                                 },

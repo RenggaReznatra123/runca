@@ -5,13 +5,17 @@ import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
 
 class ChallengeHeader extends StatelessWidget {
-  const ChallengeHeader({super.key, required this.coinBalance});
+  const ChallengeHeader({
+    super.key,
+    required this.coinBalance,
+    required this.onCoinTap,
+  });
 
   final int coinBalance;
+  final VoidCallback onCoinTap;
 
   @override
   Widget build(BuildContext context) {
-    // Padding dan tinggi dibuat sama dengan ActivityHeader.
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
       child: SizedBox(
@@ -26,7 +30,7 @@ class ChallengeHeader extends StatelessWidget {
                 ),
               ),
             ),
-            _CoinBalancePill(balance: coinBalance),
+            _CoinBalancePill(balance: coinBalance, onTap: onCoinTap),
           ],
         ),
       ),
@@ -35,43 +39,51 @@ class ChallengeHeader extends StatelessWidget {
 }
 
 class _CoinBalancePill extends StatelessWidget {
-  const _CoinBalancePill({required this.balance});
+  const _CoinBalancePill({required this.balance, required this.onTap});
 
   final int balance;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 32,
-      padding: const EdgeInsets.fromLTRB(12, 0, 10, 0),
-      decoration: BoxDecoration(
-        color: AppPalette.baseWhite,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppPalette.borderNeutral),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Image.asset(
-            AppAssets.placoin,
-            width: 18,
-            height: 18,
-            fit: BoxFit.contain,
+    return Material(
+      color: AppPalette.baseWhite,
+      borderRadius: BorderRadius.circular(20),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(20),
+        child: Container(
+          height: 40,
+          padding: const EdgeInsets.fromLTRB(14, 0, 12, 0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: AppPalette.borderNeutral),
           ),
-          const SizedBox(width: 8),
-          Text(
-            NumberFormat('#,###').format(balance),
-            style: AppTypography.bodyMedium(
-              color: AppPalette.textNeutralPrimary,
-            ).copyWith(fontSize: 13, fontWeight: AppTypography.medium),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                AppAssets.placoin,
+                width: 24,
+                height: 24,
+                fit: BoxFit.contain,
+              ),
+              const SizedBox(width: 10),
+              Text(
+                NumberFormat('#,###').format(balance),
+                style: AppTypography.bodyMedium(
+                  color: AppPalette.textNeutralPrimary,
+                ).copyWith(fontSize: 16, fontWeight: AppTypography.medium),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 20,
+                color: AppPalette.textNeutralSecondary,
+              ),
+            ],
           ),
-          const SizedBox(width: 6),
-          const Icon(
-            Icons.chevron_right_rounded,
-            size: 18,
-            color: AppPalette.textNeutralSecondary,
-          ),
-        ],
+        ),
       ),
     );
   }
