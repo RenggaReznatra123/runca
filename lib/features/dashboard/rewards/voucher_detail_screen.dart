@@ -70,13 +70,17 @@ class _VoucherDetailView extends StatelessWidget {
           case VoucherRedeemStatus.success:
             {
               final detail = state.detail;
-              if (detail == null) return;
+              final voucherId = state.voucherId;
+              if (detail == null || voucherId == null) return;
 
               // Diganti (bukan ditumpuk) supaya tombol back dari halaman
               // sukses kembali ke daftar Rewards.
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute<void>(
-                  builder: (_) => VoucherSuccessScreen(detail: detail),
+                  builder: (_) => VoucherSuccessScreen(
+                    detail: detail,
+                    voucherId: voucherId,
+                  ),
                 ),
               );
             }

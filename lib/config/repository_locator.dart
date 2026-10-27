@@ -9,6 +9,7 @@ import 'package:runca/data/dummy/dummy_settings_repository.dart';
 import 'package:runca/data/dummy/dummy_notifications_repository.dart';
 import 'package:runca/data/dummy/dummy_leaderboard_repository.dart';
 import 'package:runca/data/dummy/dummy_home_repository.dart';
+import 'package:runca/data/dummy/dummy_wallet.dart';
 
 import 'package:runca/repository/activity_repository.dart';
 import 'package:runca/repository/challenge_repository.dart';
@@ -26,12 +27,14 @@ import 'package:runca/config/user_preference.dart';
 /// Saat API siap, implementasi repository dapat diganti tanpa
 /// perlu mengubah Cubit, State, dan tampilan.
 void registerRepositories(GetIt locator) {
+  locator.registerLazySingleton<DummyWallet>(() => DummyWallet());
+
   locator.registerLazySingleton<ActivityRepository>(
     () => DummyActivityRepository(),
   );
 
   locator.registerLazySingleton<ChallengeRepository>(
-    () => DummyChallengeRepository(),
+    () => DummyChallengeRepository(locator.get<DummyWallet>()),
   );
 
   locator.registerLazySingleton<ProgressRepository>(
@@ -39,11 +42,11 @@ void registerRepositories(GetIt locator) {
   );
 
   locator.registerLazySingleton<ProfileRepository>(
-    () => DummyProfileRepository(),
+    () => DummyProfileRepository(locator.get<DummyWallet>()),
   );
 
   locator.registerLazySingleton<RewardsRepository>(
-    () => DummyRewardsRepository(),
+    () => DummyRewardsRepository(locator.get<DummyWallet>()),
   );
 
   // Ganti implementasi ini ke repository API saat backend tersedia.

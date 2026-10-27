@@ -17,9 +17,17 @@ class ProfileCubit extends Cubit<ProfileState> {
   int _requestId = 0;
 
   Future<void> loadProfile() async {
+    await _fetch(showLoading: true);
+  }
+
+  Future<void> refresh() => _fetch(showLoading: false);
+
+  Future<void> _fetch({required bool showLoading}) async {
     final requestId = ++_requestId;
 
-    emit(state.copyWith(status: ProfileStatus.loading));
+    if (showLoading) {
+      emit(state.copyWith(status: ProfileStatus.loading));
+    }
 
     try {
       final result = await _repository.getProfileData();

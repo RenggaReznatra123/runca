@@ -1,3 +1,4 @@
+import 'package:runca/features/dashboard/rewards/models/placoin_transaction_model.dart';
 import 'package:runca/features/dashboard/rewards/models/reward_model.dart';
 import 'package:runca/utility/resource/data_state.dart';
 
@@ -11,4 +12,15 @@ abstract class RewardsRepository {
 
   /// Menukar reward. Server yang memeriksa kecukupan saldo.
   Future<DataState<RedeemResult>> redeemReward(String rewardId);
+
+  /// Voucher milik pengguna hasil penukaran (kode, QR, syarat).
+  Future<DataState<RedeemedVoucher>> getVoucher(String voucherId);
+
+  /// Riwayat transaksi PlaCoins, terbaru di atas.
+  Future<DataState<List<PlaCoinTransaction>>> getCoinHistory({
+    PlaCoinHistoryFilter filter = PlaCoinHistoryFilter.all,
+  });
+
+  /// Daftar cara mendapatkan PlaCoins.
+  Future<DataState<List<EarnMethod>>> getEarnMethods();
 }

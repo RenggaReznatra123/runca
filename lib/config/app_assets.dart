@@ -31,4 +31,6 @@ class AppAssets {
   // Rewards
   static const String gacoan = 'assets/images/gacoan.jpg';
   static const String kopken = 'assets/images/kopken.jpg';
+
+  static const String coinSpentIcon = 'assets/images/coin_spent.jpg';
 }

@@ -61,6 +61,7 @@ class VoucherDetailCubit extends Cubit<VoucherDetailState> {
           state.copyWith(
             redeemStatus: VoucherRedeemStatus.success,
             coinBalance: data.remainingBalance,
+            voucherId: data.voucherId,
           ),
         );
         return;

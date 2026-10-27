@@ -77,7 +77,61 @@ class RewardDetailData {
 }
 
 class RedeemResult {
-  const RedeemResult({required this.remainingBalance});
+  const RedeemResult({required this.remainingBalance, required this.voucherId});
 
   final int remainingBalance;
+
+  /// ID voucher milik pengguna hasil penukaran.
+  final String voucherId;
+}
+
+/// Voucher milik pengguna setelah ditukar (punya kode dan QR).
+class RedeemedVoucher {
+  const RedeemedVoucher({
+    required this.id,
+    required this.title,
+    required this.brandName,
+    required this.category,
+    required this.code,
+    required this.qrData,
+    required this.validUntil,
+    required this.outlet,
+    required this.terms,
+    this.imageUrl,
+  });
+
+  final String id;
+  final String title;
+  final String brandName;
+  final RewardCategory category;
+
+  /// Kode voucher yang bisa disebut ke kasir.
+  final String code;
+
+  /// Isi QR code (string yang dibaca kasir).
+  final String qrData;
+  final DateTime validUntil;
+
+  /// Outlet yang menerima voucher.
+  final String outlet;
+
+  /// Poin-poin cara pakai dan syarat, urut dari atas.
+  final List<String> terms;
+  final String? imageUrl;
+}
+
+/// Jenis cara mendapatkan PlaCoins. Ikon dan warna dipetakan di widget.
+enum EarnMethodType { events, dailyRuns, streak }
+
+/// Satu cara mendapatkan PlaCoins.
+class EarnMethod {
+  const EarnMethod({
+    required this.type,
+    required this.title,
+    required this.description,
+  });
+
+  final EarnMethodType type;
+  final String title;
+  final String description;
 }

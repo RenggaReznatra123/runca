@@ -1,38 +1,35 @@
 import 'package:runca/config/app_assets.dart';
+import 'package:runca/data/dummy/dummy_wallet.dart';
 import 'package:runca/data/dummy_config.dart';
 import 'package:runca/features/dashboard/profile/models/profile_model.dart';
 import 'package:runca/repository/profile_repository.dart';
 import 'package:runca/utility/resource/data_state.dart';
 
 class DummyProfileRepository implements ProfileRepository {
-  static final ProfileData _profileData = ProfileData(
-    profile: const ProfileModel(
-      name: 'Dede Fernanda',
-      location: 'Semarang, Indonesia',
-      coins: 4250,
-      rank: 7,
+  DummyProfileRepository(this._wallet);
+
+  final DummyWallet _wallet;
+
+  static final List<AchievementModel> _achievements = [
+    AchievementModel(
+      id: 'achievement-1',
+      title: 'First 5K',
+      completedAt: DateTime(2026, 8, 12),
+      iconAsset: AppAssets.first5K,
     ),
-    achievements: [
-      AchievementModel(
-        id: 'achievement-1',
-        title: 'First 5K',
-        completedAt: DateTime(2026, 8, 12),
-        iconAsset: AppAssets.first5K,
-      ),
-      AchievementModel(
-        id: 'achievement-2',
-        title: '10K Milestone',
-        completedAt: DateTime(2026, 7, 28),
-        iconAsset: AppAssets.tenKMilestone,
-      ),
-      AchievementModel(
-        id: 'achievement-3',
-        title: 'Half Marathon',
-        completedAt: DateTime(2026, 6, 15),
-        iconAsset: AppAssets.halfMarathon,
-      ),
-    ],
-  );
+    AchievementModel(
+      id: 'achievement-2',
+      title: '10K Milestone',
+      completedAt: DateTime(2026, 7, 28),
+      iconAsset: AppAssets.tenKMilestone,
+    ),
+    AchievementModel(
+      id: 'achievement-3',
+      title: 'Half Marathon',
+      completedAt: DateTime(2026, 6, 15),
+      iconAsset: AppAssets.halfMarathon,
+    ),
+  ];
 
   @override
   Future<DataState<ProfileData>> getProfileData() async {
@@ -51,7 +48,17 @@ class DummyProfileRepository implements ProfileRepository {
         );
 
       case DummyScenario.data:
-        return DataStateSuccess<ProfileData>(_profileData);
+        return DataStateSuccess<ProfileData>(
+          ProfileData(
+            profile: ProfileModel(
+              name: 'Dede Fernanda',
+              location: 'Semarang, Indonesia',
+              coins: _wallet.balance,
+              rank: 7,
+            ),
+            achievements: _achievements,
+          ),
+        );
     }
   }
 }

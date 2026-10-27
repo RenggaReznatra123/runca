@@ -1,11 +1,16 @@
 import 'package:dio/dio.dart';
 import 'package:runca/config/app_assets.dart';
+import 'package:runca/data/dummy/dummy_wallet.dart';
 import 'package:runca/data/dummy_config.dart';
 import 'package:runca/features/dashboard/challenge/models/challenge_model.dart';
 import 'package:runca/repository/challenge_repository.dart';
 import 'package:runca/utility/resource/data_state.dart';
 
 class DummyChallengeRepository implements ChallengeRepository {
+  DummyChallengeRepository(this._wallet);
+
+  final DummyWallet _wallet;
+
   static const String _about =
       'Complete a 5 km run (outdoor or treadmill) in a single session before '
       'the deadline to earn 5,000 PlaCoins.';
@@ -63,7 +68,7 @@ class DummyChallengeRepository implements ChallengeRepository {
       case DummyScenario.empty:
         return const DataStateSuccess<int>(0);
       case DummyScenario.data:
-        return const DataStateSuccess<int>(10000);
+        return DataStateSuccess<int>(_wallet.balance);
     }
   }
 

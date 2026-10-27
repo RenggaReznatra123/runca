@@ -43,10 +43,15 @@ class _ChallengeView extends StatelessWidget {
               builder: (context, coinBalance) {
                 return ChallengeHeader(
                   coinBalance: coinBalance,
-                  onCoinTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(builder: (_) => RewardsScreen()),
+                  onCoinTap: () async {
+                    final cubit = context.read<ChallengeCubit>();
+                    await Navigator.of(context).push<void>(
+                      MaterialPageRoute<void>(
+                        builder: (_) => const RewardsScreen(),
+                      ),
                     );
+                    if (!context.mounted || cubit.isClosed) return;
+                    await cubit.refresh();
                   },
                 );
               },

@@ -3,14 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:runca/config/app_assets.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/shared_view/app_image.dart';
-
 import 'models/reward_model.dart';
+import 'my_voucher_detail_screen.dart';
 
 class VoucherSuccessScreen extends StatelessWidget {
-  const VoucherSuccessScreen({super.key, required this.detail});
+  const VoucherSuccessScreen({
+    super.key,
+    required this.detail,
+    required this.voucherId,
+  });
 
   final RewardDetail detail;
-
+  final String voucherId;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -74,16 +78,12 @@ class VoucherSuccessScreen extends StatelessWidget {
                     height: 56,
                     child: ElevatedButton(
                       onPressed: () {
-                        // Halaman My Vouchers belum dibuat.
-                        ScaffoldMessenger.of(context)
-                          ..hideCurrentSnackBar()
-                          ..showSnackBar(
-                            const SnackBar(
-                              content: Text('My Vouchers belum tersedia.'),
-                              behavior: SnackBarBehavior.floating,
-                              duration: Duration(seconds: 2),
-                            ),
-                          );
+                        Navigator.of(context).push(
+                          MaterialPageRoute<void>(
+                            builder: (_) =>
+                                MyVoucherDetailScreen(voucherId: voucherId),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppPalette.bgFillPrimary,

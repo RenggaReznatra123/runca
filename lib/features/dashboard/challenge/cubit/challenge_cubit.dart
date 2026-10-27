@@ -18,6 +18,8 @@ class ChallengeCubit extends Cubit<ChallengeState> {
 
   Future<void> loadChallenges() => _fetch(showLoading: true, withBalance: true);
 
+  Future<void> refresh() => _fetch(showLoading: false, withBalance: true);
+
   void selectTab(ChallengeTab tab) {
     if (tab == state.selectedTab) return;
     emit(state.copyWith(selectedTab: tab));
