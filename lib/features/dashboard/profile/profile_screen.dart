@@ -131,12 +131,15 @@ class ProfileScreen extends StatelessWidget {
                                 title: 'Your PlaCoins',
                                 value: AppFormat.thousands(profile.coins),
                                 imagePath: AppAssets.placoin,
-                                onTap: () {
-                                  Navigator.of(context).push(
+                                onTap: () async {
+                                  final cubit = context.read<ProfileCubit>();
+                                  await Navigator.of(context).push<void>(
                                     MaterialPageRoute<void>(
                                       builder: (_) => const RewardsScreen(),
                                     ),
                                   );
+                                  if (!context.mounted || cubit.isClosed) return;
+                                  await cubit.refresh();
                                 },
                               ),
                             ),

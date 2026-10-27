@@ -66,6 +66,7 @@ dependencies:
   syncfusion_flutter_pdfviewer: ^34.2.6
   dio: ^5.11.1
   bloc: ^9.2.1
+  qr_flutter: ^4.1.0
 dev_dependencies:
   sentry_dart_plugin: ^3.4.0
   flutter_test:

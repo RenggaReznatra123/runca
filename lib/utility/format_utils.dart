@@ -48,7 +48,9 @@ class AppFormat {
   /// 2 -> '2', 12 (persen) -> '12%', 1.5 -> '1.5'
   static String change(double amount, {bool isPercent = false}) {
     final isWhole = amount == amount.roundToDouble();
-    final text = isWhole ? amount.round().toString() : amount.toStringAsFixed(1);
+    final text = isWhole
+        ? amount.round().toString()
+        : amount.toStringAsFixed(1);
 
     return isPercent ? '$text%' : text;
   }
@@ -139,12 +141,23 @@ class AppFormat {
     return parts.isEmpty || parts.first.isEmpty ? 'there' : parts.first;
   }
 
-    /// 48 -> '48 vouchers', 1 -> '1 voucher'
+  /// 48 -> '48 vouchers', 1 -> '1 voucher'
   static String voucherCount(int count) {
     return count == 1 ? '1 voucher' : '$count vouchers';
   }
 
   static String weekdayShort(DateTime date) {
     return DateFormat('EEE', 'en_US').format(date);
+  }
+
+  /// 5000 -> '+5,000 PC', -10000 -> '-10,000 PC'
+  static String coinAmount(int amount) {
+    final sign = amount < 0 ? '-' : '+';
+    return '$sign${thousands(amount.abs())} PC';
+  }
+
+  /// DateTime(2026, 9, 27, 8, 15) -> '08:15 AM'
+  static String timeOfDay(DateTime dateTime) {
+    return DateFormat('hh:mm a', 'en_US').format(dateTime);
   }
 }

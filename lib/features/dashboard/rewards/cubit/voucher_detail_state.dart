@@ -10,12 +10,16 @@ class VoucherDetailState {
     this.redeemStatus = VoucherRedeemStatus.idle,
     this.detail,
     this.coinBalance = 0,
+    this.voucherId,
   });
 
   final VoucherLoadStatus loadStatus;
   final VoucherRedeemStatus redeemStatus;
   final RewardDetail? detail;
   final int coinBalance;
+
+  /// ID voucher hasil redeem. Null sebelum redeem berhasil.
+  final String? voucherId;
 
   bool get hasEnoughCoins {
     final current = detail;
@@ -27,12 +31,14 @@ class VoucherDetailState {
     VoucherRedeemStatus? redeemStatus,
     RewardDetail? detail,
     int? coinBalance,
+    String? voucherId,
   }) {
     return VoucherDetailState(
       loadStatus: loadStatus ?? this.loadStatus,
       redeemStatus: redeemStatus ?? this.redeemStatus,
       detail: detail ?? this.detail,
       coinBalance: coinBalance ?? this.coinBalance,
+      voucherId: voucherId ?? this.voucherId,
     );
   }
 }

@@ -6,7 +6,9 @@ import 'package:runca/ui/shared_view/empty_view.dart';
 
 import 'cubit/rewards_cubit.dart';
 import 'cubit/rewards_state.dart';
+import 'how_to_earn_screen.dart';
 import 'models/reward_model.dart';
+import 'placoin_history_screen.dart';
 import 'voucher_detail_screen.dart';
 import 'widgets/reward_balance_card.dart';
 import 'widgets/reward_card.dart';
@@ -136,8 +138,20 @@ class _RewardsView extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
             child: RewardBalanceCard(
               balance: state.coinBalance,
-              onHistoryTap: () => _showUnavailable(context, 'PlaCoins History'),
-              onHowToEarnTap: () => _showUnavailable(context, 'How to Earn'),
+              onHistoryTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const PlaCoinHistoryScreen(),
+                  ),
+                );
+              },
+              onHowToEarnTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const HowToEarnScreen(),
+                  ),
+                );
+              },
             ),
           ),
         ),
