@@ -124,7 +124,7 @@ class _TicketHeader extends StatelessWidget {
               Text(
                 voucher.brandName,
                 style: AppTypography.bodyMedium(
-                  color: AppPalette.voucherBrandText,
+                  color: AppPalette.profileMutedText,
                 ),
               ),
             ],
