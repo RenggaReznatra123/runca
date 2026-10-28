@@ -6,9 +6,10 @@ part 'login_request.g.dart';
 class LoginRequest {
   String? email;
   String? password;
-  String? fcm_token;
+  @JsonKey(name: 'fcm_token')
+  String? fcmToken;
 
-  LoginRequest({this.email, this.password, this.fcm_token});
+  LoginRequest({this.email, this.password, this.fcmToken});
 
   factory LoginRequest.fromJson(Map<String, dynamic> json) =>
       _$LoginRequestFromJson(json);

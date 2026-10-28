@@ -3,18 +3,19 @@ import 'package:flutter/material.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
 
-import '../models/placoin_transaction_model.dart';
-
-/// Tab pill All / Earned / Spent.
-class PlaCoinHistoryTabs extends StatelessWidget {
-  const PlaCoinHistoryTabs({
+class RewardsFilterTabs<T> extends StatelessWidget {
+  const RewardsFilterTabs({
     super.key,
+    required this.options,
     required this.selected,
+    required this.labelBuilder,
     required this.onChanged,
   });
 
-  final PlaCoinHistoryFilter selected;
-  final ValueChanged<PlaCoinHistoryFilter> onChanged;
+  final List<T> options;
+  final T selected;
+  final String Function(T option) labelBuilder;
+  final ValueChanged<T> onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -27,20 +28,20 @@ class PlaCoinHistoryTabs extends StatelessWidget {
       ),
       child: Row(
         children: [
-          for (final filter in PlaCoinHistoryFilter.values)
+          for (final option in options)
             Expanded(
               child: GestureDetector(
                 behavior: HitTestBehavior.opaque,
-                onTap: () => onChanged(filter),
+                onTap: () => onChanged(option),
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 180),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: selected == filter
+                    color: selected == option
                         ? AppPalette.baseWhite
                         : AppPalette.baseWhite.withValues(alpha: 0),
                     borderRadius: BorderRadius.circular(26),
-                    boxShadow: selected == filter
+                    boxShadow: selected == option
                         ? [
                             BoxShadow(
                               color: AppPalette.baseBlack.withValues(
@@ -53,13 +54,13 @@ class PlaCoinHistoryTabs extends StatelessWidget {
                         : null,
                   ),
                   child: Text(
-                    filter.label,
+                    labelBuilder(option),
                     maxLines: 1,
                     style:
                         AppTypography.bodyMedium(
                           color: AppPalette.textNeutralPrimary,
                         ).copyWith(
-                          fontWeight: selected == filter
+                          fontWeight: selected == option
                               ? AppTypography.medium
                               : AppTypography.regular,
                         ),

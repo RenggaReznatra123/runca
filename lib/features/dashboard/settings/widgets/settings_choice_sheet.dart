@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import 'package:runca/ui/color.dart';
@@ -16,8 +15,8 @@ class SettingsChoiceSheet {
   }) {
     return showModalBottomSheet<String>(
       context: context,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.black54,
+      backgroundColor: AppPalette.transparent,
+      barrierColor: AppPalette.overlayBlack54,
       isScrollControlled: true,
       builder: (sheetContext) {
         return SafeArea(
@@ -31,10 +30,8 @@ class SettingsChoiceSheet {
               24 + MediaQuery.paddingOf(sheetContext).bottom,
             ),
             decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(
-                top: Radius.circular(24),
-              ),
+              color: AppPalette.baseWhite,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -84,23 +81,22 @@ class SettingsChoiceSheet {
                           width: double.infinity,
                           height: 70,
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 19,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 19),
                             child: Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
                                 option,
-                                style: AppTypography.bodyMedium(
-                                  color: isSelected
-                                      ? Colors.white
-                                      : AppPalette.profileDarkText,
-                                ).copyWith(
-                                  fontSize: 15,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w600
-                                      : FontWeight.w500,
-                                ),
+                                style:
+                                    AppTypography.bodyMedium(
+                                      color: isSelected
+                                          ? AppPalette.baseWhite
+                                          : AppPalette.profileDarkText,
+                                    ).copyWith(
+                                      fontSize: 15,
+                                      fontWeight: isSelected
+                                          ? FontWeight.w600
+                                          : FontWeight.w500,
+                                    ),
                               ),
                             ),
                           ),

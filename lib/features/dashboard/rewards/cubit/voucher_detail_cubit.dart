@@ -8,20 +8,19 @@ import '../models/reward_model.dart';
 import 'voucher_detail_state.dart';
 
 class VoucherDetailCubit extends Cubit<VoucherDetailState> {
-  VoucherDetailCubit({required String rewardId, RewardsRepository? repository})
-    : _rewardId = rewardId,
-      _repository = repository ?? serviceLocator.get<RewardsRepository>(),
+  VoucherDetailCubit({required this.rewardId, RewardsRepository? repository})
+    : _repository = repository ?? serviceLocator.get<RewardsRepository>(),
       super(const VoucherDetailState()) {
     loadDetail();
   }
 
-  final String _rewardId;
+  final String rewardId;
   final RewardsRepository _repository;
 
   Future<void> loadDetail() async {
     emit(state.copyWith(loadStatus: VoucherLoadStatus.loading));
 
-    final result = await _repository.getRewardDetail(_rewardId);
+    final result = await _repository.getRewardDetail(rewardId);
 
     if (isClosed) return;
 
@@ -49,7 +48,7 @@ class VoucherDetailCubit extends Cubit<VoucherDetailState> {
 
     emit(state.copyWith(redeemStatus: VoucherRedeemStatus.redeeming));
 
-    final result = await _repository.redeemReward(_rewardId);
+    final result = await _repository.redeemReward(rewardId);
 
     if (isClosed) return;
 

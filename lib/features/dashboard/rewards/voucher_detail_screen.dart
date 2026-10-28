@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:runca/ui/color.dart';
+import 'package:runca/utility/snackbar_extension.dart';
 
 import 'cubit/voucher_detail_cubit.dart';
 import 'cubit/voucher_detail_state.dart';
@@ -29,15 +30,7 @@ class _VoucherDetailView extends StatelessWidget {
   const _VoucherDetailView();
 
   void _showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+    context.showInfoSnackbar(message, duration: const Duration(seconds: 2));
   }
 
   Future<void> _confirmRedeem(

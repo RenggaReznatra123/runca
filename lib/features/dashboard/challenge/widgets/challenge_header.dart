@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:runca/config/app_assets.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
+import 'package:runca/utility/format_utils.dart';
 
 class ChallengeHeader extends StatelessWidget {
   const ChallengeHeader({
@@ -70,7 +70,7 @@ class _CoinBalancePill extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                NumberFormat('#,###').format(balance),
+                AppFormat.thousands(balance),
                 style: AppTypography.bodyMedium(
                   color: AppPalette.textNeutralPrimary,
                 ).copyWith(fontSize: 16, fontWeight: AppTypography.medium),

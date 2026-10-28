@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:runca/config/app_assets.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
 
@@ -72,9 +73,6 @@ class ActivityStateView extends StatelessWidget {
 class ActivityEmptyView extends StatelessWidget {
   const ActivityEmptyView({super.key, required this.onStartActivity});
 
-  /// Export ilustrasi dari Figma dan simpan dengan nama ini.
-  static const String illustrationAsset = 'assets/images/activity_empty.png';
-
   final VoidCallback onStartActivity;
 
   @override
@@ -86,7 +84,7 @@ class ActivityEmptyView extends StatelessWidget {
         child: Align(
           alignment: Alignment.topCenter,
           child: Image.asset(
-            illustrationAsset,
+            AppAssets.activityEmpty,
             width: 108,
             height: 91,
             fit: BoxFit.contain,

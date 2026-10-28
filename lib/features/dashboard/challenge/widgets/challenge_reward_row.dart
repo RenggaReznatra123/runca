@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:runca/config/app_assets.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
+import 'package:runca/utility/format_utils.dart';
 
 class ChallengeRewardRow extends StatelessWidget {
   const ChallengeRewardRow({super.key, required this.amount});
 
-  /// Jumlah hadiah yang sudah diformat, contoh: '5,000'.
-  final String amount;
+  final int amount;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +19,7 @@ class ChallengeRewardRow extends StatelessWidget {
           TextSpan(
             children: [
               TextSpan(
-                text: '+ $amount',
+                text: AppFormat.challengeReward(amount),
                 style: AppTypography.titleMedium(
                   color: AppPalette.textNeutralPrimary,
                 ).copyWith(fontSize: 16),

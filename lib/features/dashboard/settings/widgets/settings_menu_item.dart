@@ -25,7 +25,7 @@ class SettingsMenuItem extends StatelessWidget {
         SizedBox(
           height: 46,
           child: Material(
-            color: Colors.transparent,
+            color: AppPalette.transparent,
             child: InkWell(
               onTap: onTap,
               child: Row(

@@ -39,10 +39,10 @@ class SettingsToggleItem extends StatelessWidget {
                   onChanged: onChanged,
                   activeTrackColor: AppPalette.profileAccent,
                   inactiveTrackColor: AppPalette.borderDisabled,
-                  activeThumbColor: Colors.white,
-                  inactiveThumbColor: Colors.white,
+                  activeThumbColor: AppPalette.baseWhite,
+                  inactiveThumbColor: AppPalette.baseWhite,
                   trackOutlineColor: const WidgetStatePropertyAll(
-                    Colors.transparent,
+                    AppPalette.transparent,
                   ),
                   materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),

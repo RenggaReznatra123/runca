@@ -41,7 +41,7 @@ class _MyVoucherDetailView extends StatelessWidget {
         SnackBar(
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 2),
-          backgroundColor: Colors.transparent,
+          backgroundColor: AppPalette.transparent,
           elevation: 0,
           padding: EdgeInsets.zero,
           margin: const EdgeInsets.fromLTRB(20, 0, 20, 16),

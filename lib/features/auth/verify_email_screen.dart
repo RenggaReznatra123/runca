@@ -4,12 +4,10 @@ import 'package:runca/features/auth/cubit/verify_email_cubit.dart';
 import 'package:runca/features/auth/create_new_password_screen.dart';
 import 'package:runca/features/auth/profile_setup_screen.dart';
 import 'package:runca/ui/color.dart';
-import 'package:runca/ui/custom_button.dart';
 import 'package:runca/ui/custom_icons.dart';
-import 'package:runca/ui/dimension.dart';
-import 'package:runca/ui/shared_view/otp_input.dart';
-import 'package:runca/ui/typography.dart';
 import 'package:runca/utility/snackbar_extension.dart';
+
+import 'widgets/verify_email_content.dart';
 
 enum VerifyEmailPurpose { signUp, resetPassword }
 
@@ -43,13 +41,7 @@ class _VerifyEmailView extends StatefulWidget {
 }
 
 class _VerifyEmailViewState extends State<_VerifyEmailView> {
-  static const String _verifyLabel = 'Verify & Continue';
-  static const String _resendPrompt = "Haven't received the email?";
-  static const String _resendLabel = 'Resend the code.';
-  static const String _expiryPrefix = 'The code will expire in ';
-  static const String _expiredLabel = 'The code has expired.';
   static const String _resentMessage = 'A new code has been sent.';
-  static const double _tapTargetHeight = 40;
 
   final TextEditingController _codeController = TextEditingController();
 
@@ -57,9 +49,6 @@ class _VerifyEmailViewState extends State<_VerifyEmailView> {
 
   bool get _isResetPassword =>
       widget.purpose == VerifyEmailPurpose.resetPassword;
-
-  String get _title =>
-      _isResetPassword ? 'Verify Your Email' : 'Verify Your Email';
 
   @override
   void dispose() {
@@ -69,7 +58,6 @@ class _VerifyEmailViewState extends State<_VerifyEmailView> {
 
   void _verify() {
     FocusScope.of(context).unfocus();
-
     context.read<VerifyEmailCubit>().verify(_codeController.text.trim());
   }
 
@@ -93,37 +81,14 @@ class _VerifyEmailViewState extends State<_VerifyEmailView> {
       return;
     }
 
-    // Flow Sign Up tetap menuju Profile Setup.
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute<void>(builder: (_) => const ProfileSetupScreen()),
       (route) => false,
     );
   }
 
-  String _formatCountdown(int totalSeconds) {
-    final minutes = (totalSeconds ~/ 60).toString().padLeft(2, '0');
-    final seconds = (totalSeconds % 60).toString().padLeft(2, '0');
-
-    return '$minutes:$seconds';
-  }
-
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final textTheme = theme.textTheme;
-
-    final bodyStyle = textTheme.bodyMedium?.copyWith(
-      color: AppPalette.textNeutralPrimary,
-    );
-
-    final emphasisStyle = bodyStyle?.copyWith(
-      fontWeight: AppTypography.semiBold,
-    );
-
-    final accentStyle = emphasisStyle?.copyWith(
-      color: theme.colorScheme.primary,
-    );
-
     return Scaffold(
       backgroundColor: AppPalette.bg,
       appBar: AppBar(
@@ -150,123 +115,19 @@ class _VerifyEmailViewState extends State<_VerifyEmailView> {
           }
         },
         child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimens.pagePadding,
-            ),
-            child: BlocBuilder<VerifyEmailCubit, VerifyEmailState>(
-              builder: (context, state) {
-                final isVerifying = state.status == VerifyEmailStatus.verifying;
-
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: AppDimens.s24),
-                    Text(
-                      _title,
-                      style: textTheme.headlineSmall?.copyWith(
-                        height: 1.2,
-                        fontWeight: AppTypography.medium,
-                        color: AppPalette.textNeutralPrimary,
-                      ),
-                    ),
-                    const SizedBox(height: AppDimens.s12),
-                    Text.rich(
-                      TextSpan(
-                        style: bodyStyle,
-                        children: [
-                          TextSpan(
-                            text:
-                                "We've sent a "
-                                '${VerifyEmailCubit.codeLength}-digit '
-                                'verification code to ',
-                          ),
-                          TextSpan(text: widget.email, style: emphasisStyle),
-                          const TextSpan(
-                            text:
-                                '. Enter the code below to '
-                                'continue.',
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: AppDimens.s32),
-                    OtpInput(
-                      controller: _codeController,
-                      length: VerifyEmailCubit.codeLength,
-                      hasError: state.status == VerifyEmailStatus.failure,
-                      onChanged: (_) {
-                        context.read<VerifyEmailCubit>().clearError();
-                      },
-                    ),
-                    if (state.errorMessage != null) ...[
-                      const SizedBox(height: AppDimens.s8),
-                      Text(
-                        state.errorMessage!,
-                        style: textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.error,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: AppDimens.s32),
-                    Wrap(
-                      alignment: WrapAlignment.center,
-                      crossAxisAlignment: WrapCrossAlignment.center,
-                      children: [
-                        Text(_resendPrompt, style: bodyStyle),
-                        TextButton(
-                          onPressed: isVerifying ? null : _resend,
-                          style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: AppDimens.s4,
-                            ),
-                            minimumSize: const Size(0, _tapTargetHeight),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            textStyle: AppTypography.bodyMedium().copyWith(
-                              fontWeight: AppTypography.semiBold,
-                            ),
-                          ),
-                          child: const Text(_resendLabel),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppDimens.s16),
-                    ListenableBuilder(
-                      listenable: _codeController,
-                      builder: (context, _) {
-                        final canSubmit =
-                            _codeController.text.length ==
-                                VerifyEmailCubit.codeLength &&
-                            !isVerifying;
-
-                        return CustomButton(
-                          text: _verifyLabel,
-                          isLoading: isVerifying,
-                          onPressed: canSubmit ? _verify : null,
-                        );
-                      },
-                    ),
-                    const SizedBox(height: AppDimens.s32),
-                    Text.rich(
-                      textAlign: TextAlign.center,
-                      state.isExpired
-                          ? TextSpan(text: _expiredLabel, style: bodyStyle)
-                          : TextSpan(
-                              style: bodyStyle,
-                              children: [
-                                const TextSpan(text: _expiryPrefix),
-                                TextSpan(
-                                  text: _formatCountdown(state.secondsLeft),
-                                  style: accentStyle,
-                                ),
-                              ],
-                            ),
-                    ),
-                    const SizedBox(height: AppDimens.s16),
-                  ],
-                );
-              },
-            ),
+          child: BlocBuilder<VerifyEmailCubit, VerifyEmailState>(
+            builder: (context, state) {
+              return VerifyEmailContent(
+                email: widget.email,
+                codeController: _codeController,
+                state: state,
+                onCodeChanged: (_) {
+                  context.read<VerifyEmailCubit>().clearError();
+                },
+                onResend: _resend,
+                onVerify: _verify,
+              );
+            },
           ),
         ),
       ),
