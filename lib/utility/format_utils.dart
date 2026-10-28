@@ -16,6 +16,10 @@ class AppFormat {
   /// 1280 -> '1,280'
   static String thousands(int value) => _thousands.format(value);
 
+  static String integer(int value) => value.toString();
+
+  static String dayUnit(int count) => count == 1 ? 'day' : 'days';
+
   /// 2616 -> '43:36', 4133 -> '1:08:53'
   static String duration(int totalSeconds) {
     final hours = totalSeconds ~/ 3600;
@@ -68,6 +72,25 @@ class AppFormat {
   /// DateTime(2026, 8, 12) -> 'Aug 12, 2026'
   static String shortDate(DateTime date) {
     return DateFormat('MMM d, y', 'en_US').format(date);
+  }
+
+  /// 5.123 -> '5.12' (angka saja, satuan ditulis di label)
+  static String distanceNumber(double km) => km.toStringAsFixed(2);
+
+  /// Besok-kemarin: 'Yesterday, Sep 21 • 6:42 AM'. Hari ini: 'Today, ...'.
+  /// Lebih lama dari kemarin: format activityDateTime.
+  static String lastActivityDateTime(DateTime dateTime, {DateTime? now}) {
+    final current = now ?? DateTime.now();
+    final today = DateTime(current.year, current.month, current.day);
+    final day = DateTime(dateTime.year, dateTime.month, dateTime.day);
+    final time = DateFormat('MMM d \u2022 h:mm a', 'en_US').format(dateTime);
+
+    if (day == today) return 'Today, $time';
+    if (day == today.subtract(const Duration(days: 1))) {
+      return 'Yesterday, $time';
+    }
+
+    return activityDateTime(dateTime);
   }
 
   /// Waktu tersisa sampai batas akhir challenge.
@@ -156,8 +179,24 @@ class AppFormat {
     return '$sign${thousands(amount.abs())} PC';
   }
 
+  static String challengeReward(int amount) => '+ ${thousands(amount)}';
+
+  static String dayStreak(int days) => '$days-day streak';
+
   /// DateTime(2026, 9, 27, 8, 15) -> '08:15 AM'
   static String timeOfDay(DateTime dateTime) {
     return DateFormat('hh:mm a', 'en_US').format(dateTime);
+  }
+
+  static String countdownMinutesSeconds(int totalSeconds) {
+    final minutes = (totalSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (totalSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
+  }
+
+  static String birthdayInput(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '$month/$day/${date.year}';
   }
 }

@@ -10,7 +10,7 @@ import 'how_to_earn_screen.dart';
 import 'models/placoin_transaction_model.dart';
 import 'widgets/placoin_history_empty_view.dart';
 import 'widgets/placoin_history_group.dart';
-import 'widgets/placoin_history_tabs.dart';
+import 'widgets/rewards_filter_tabs.dart';
 import 'widgets/rewards_error_view.dart';
 
 /// Riwayat transaksi PlaCoins (dibuka dari kartu saldo di Rewards).
@@ -94,8 +94,10 @@ class _PlaCoinHistoryView extends StatelessWidget {
                     PlaCoinHistoryFilter
                   >(
                     selector: (state) => state.filter,
-                    builder: (context, filter) => PlaCoinHistoryTabs(
+                    builder: (context, filter) => RewardsFilterTabs(
+                      options: PlaCoinHistoryFilter.values,
                       selected: filter,
+                      labelBuilder: (filter) => filter.label,
                       onChanged: cubit.selectFilter,
                     ),
                   ),

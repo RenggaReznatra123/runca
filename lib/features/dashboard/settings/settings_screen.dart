@@ -10,31 +10,20 @@ import 'package:runca/features/dashboard/settings/cubit/settings_state.dart';
 import 'package:runca/features/dashboard/settings/models/app_settings.dart';
 import 'package:runca/features/dashboard/settings/widgets/settings_choice_sheet.dart';
 import 'package:runca/features/dashboard/settings/widgets/settings_header.dart';
-import 'package:runca/features/dashboard/settings/widgets/settings_logout_button.dart';
 import 'package:runca/features/dashboard/settings/widgets/settings_logout_dialog.dart';
-import 'package:runca/features/dashboard/settings/widgets/settings_menu_item.dart';
-import 'package:runca/features/dashboard/settings/widgets/settings_section.dart';
-import 'package:runca/features/dashboard/settings/widgets/settings_toggle_item.dart';
+import 'package:runca/features/dashboard/settings/widgets/settings_list.dart';
 import 'package:runca/ui/color.dart';
-import 'package:runca/ui/typography.dart';
+import 'package:runca/utility/snackbar_extension.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
 
   void _showUnavailable(BuildContext context, String page) {
-    _showMessage(context, '$page belum tersedia.');
+    context.showUnavailableSnackbar(page, duration: const Duration(seconds: 2));
   }
 
   void _showMessage(BuildContext context, String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text(message),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+    context.showInfoSnackbar(message, duration: const Duration(seconds: 2));
   }
 
   Future<void> _selectLanguage(
@@ -138,112 +127,19 @@ class SettingsScreen extends StatelessWidget {
                         builder: (context, state) {
                           final cubit = context.read<SettingsCubit>();
 
-                          return ListView(
-                            padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
-                            children: [
-                              SettingsSection(
-                                title: 'Account',
-                                children: [
-                                  SettingsMenuItem(
-                                    title: 'Change Password',
-                                    showDivider: false,
-                                    onTap: () => _showUnavailable(
-                                      context,
-                                      'Change Password',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              SettingsSection(
-                                title: 'Preferences',
-                                children: [
-                                  SettingsMenuItem(
-                                    title: 'Language',
-                                    value: state.settings.language.rowLabel,
-                                    onTap: () => _selectLanguage(
-                                      context,
-                                      cubit,
-                                      state.settings.language,
-                                    ),
-                                  ),
-                                  SettingsMenuItem(
-                                    title: 'Units',
-                                    value: state.settings.units.label,
-                                    onTap: () => _selectUnits(
-                                      context,
-                                      cubit,
-                                      state.settings.units,
-                                    ),
-                                  ),
-                                  SettingsToggleItem(
-                                    title: 'Notifications',
-                                    value: state.settings.notificationsEnabled,
-                                    onChanged: cubit.toggleNotifications,
-                                  ),
-                                  SettingsToggleItem(
-                                    title: 'Dark Mode',
-                                    value: state.settings.darkModeEnabled,
-                                    onChanged: cubit.toggleDarkMode,
-                                    showDivider: false,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              SettingsSection(
-                                title: 'Help',
-                                children: [
-                                  SettingsMenuItem(
-                                    title: 'FAQ',
-                                    onTap: () =>
-                                        _showUnavailable(context, 'FAQ'),
-                                  ),
-                                  SettingsMenuItem(
-                                    title: 'Contact Support',
-                                    showDivider: false,
-                                    onTap: () => _showUnavailable(
-                                      context,
-                                      'Contact Support',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              SettingsSection(
-                                title: 'About',
-                                children: [
-                                  SettingsMenuItem(
-                                    title: 'Privacy Policy',
-                                    onTap: () => _showUnavailable(
-                                      context,
-                                      'Privacy Policy',
-                                    ),
-                                  ),
-                                  SettingsMenuItem(
-                                    title: 'Terms of Service',
-                                    showDivider: false,
-                                    onTap: () => _showUnavailable(
-                                      context,
-                                      'Terms of Service',
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              SettingsLogoutButton(
-                                onTap: () => _confirmLogout(context),
-                              ),
-                              const SizedBox(height: 20),
-                              Center(
-                                child: Text(
-                                  'Plarita v${serviceLocator.get<PackageInfo>().version}',
-                                  style: AppTypography.bodySmall(
-                                    color: AppPalette.profileMutedText,
-                                  ).copyWith(fontSize: 12),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                            ],
+                          return SettingsList(
+                            state: state,
+                            version:
+                                'Plarita v${serviceLocator.get<PackageInfo>().version}',
+                            onUnavailable: (page) =>
+                                _showUnavailable(context, page),
+                            onSelectLanguage: (selected) =>
+                                _selectLanguage(context, cubit, selected),
+                            onSelectUnits: (selected) =>
+                                _selectUnits(context, cubit, selected),
+                            onToggleNotifications: cubit.toggleNotifications,
+                            onToggleDarkMode: cubit.toggleDarkMode,
+                            onLogout: () => _confirmLogout(context),
                           );
                         },
                       ),

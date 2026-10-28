@@ -18,8 +18,6 @@ class ApiResponse<T> {
     T Function(Object? json) fromJsonT,
   ) => _$ApiResponseFromJson<T>(json, fromJsonT);
 
-  get rooms => null;
-
   Map<String, dynamic> toJson(Object Function(T) toJsonT) =>
       _$ApiResponseToJson<T>(this, toJsonT);
 }

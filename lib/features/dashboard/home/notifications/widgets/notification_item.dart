@@ -6,6 +6,8 @@ import 'package:runca/utility/format_utils.dart';
 
 import '../models/notification_model.dart';
 import 'notification_presentation.dart';
+import 'notification_activity_summary.dart';
+import 'notification_icon.dart';
 import 'weekly_progress_card.dart';
 
 class NotificationItem extends StatelessWidget {
@@ -39,7 +41,7 @@ class NotificationItem extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _NotificationIcon(notification: notification),
+          NotificationIcon(notification: notification),
           const SizedBox(width: 16),
           Expanded(
             child: Column(
@@ -62,7 +64,7 @@ class NotificationItem extends StatelessWidget {
                 ),
                 if (notification.activity != null) ...[
                   const SizedBox(height: 12),
-                  _ActivitySummary(activity: notification.activity!),
+                  NotificationActivitySummary(activity: notification.activity!),
                 ],
                 if (notification.progress != null) ...[
                   const SizedBox(height: 10),
@@ -108,132 +110,6 @@ class NotificationItem extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _NotificationIcon extends StatelessWidget {
-  const _NotificationIcon({required this.notification});
-
-  final NotificationModel notification;
-
-  @override
-  Widget build(BuildContext context) {
-    if (notification.type == NotificationType.reminder) {
-      final imagePath = notification.imageUrl;
-      if (imagePath == null || imagePath.isEmpty) return _fallbackIcon();
-
-      final image = imagePath.startsWith('http')
-          ? Image.network(
-              imagePath,
-              width: 48,
-              height: 48,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => _fallbackIcon(),
-            )
-          : Image.asset(
-              imagePath,
-              width: 48,
-              height: 48,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => _fallbackIcon(),
-            );
-      return ClipOval(child: image);
-    }
-
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: notification.type.iconColor,
-        shape: BoxShape.circle,
-      ),
-      alignment: Alignment.center,
-      child: Icon(
-        notification.type.icon,
-        color: AppPalette.baseWhite,
-        size: 25,
-      ),
-    );
-  }
-
-  Widget _fallbackIcon() {
-    return Container(
-      width: 48,
-      height: 48,
-      color: notification.type.iconColor,
-      alignment: Alignment.center,
-      child: Icon(
-        notification.type.icon,
-        color: AppPalette.baseWhite,
-        size: 25,
-      ),
-    );
-  }
-}
-
-class _ActivitySummary extends StatelessWidget {
-  const _ActivitySummary({required this.activity});
-
-  final ActivitySummary activity;
-
-  static const Color _textColor = AppPalette.textNeutralPrimary;
-  static const Color _secondaryColor = AppPalette.textNeutralSecondary;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(7),
-          child: Container(
-            width: 64,
-            height: 46,
-            color: AppPalette.bgSurfaceNeutral,
-            alignment: Alignment.center,
-            child: const Icon(
-              Icons.map_outlined,
-              color: _secondaryColor,
-              size: 25,
-            ),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                activity.title,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: AppTypography.titleSmall(color: _textColor).copyWith(
-                  fontSize: 12,
-                  fontWeight: AppTypography.medium,
-                  height: 1.3,
-                ),
-              ),
-              const SizedBox(height: 3),
-              Text(
-                '${AppFormat.distanceKm(activity.distanceKm)} · '
-                '${AppFormat.duration(activity.durationSeconds)}',
-                style: AppTypography.bodyMedium(
-                  color: _secondaryColor,
-                ).copyWith(fontSize: 11.5),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                '${AppFormat.pacePerKm(activity.paceSecondsPerKm)} · '
-                '${AppFormat.calories(activity.calories)}',
-                style: AppTypography.bodyMedium(
-                  color: _secondaryColor,
-                ).copyWith(fontSize: 11.5),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

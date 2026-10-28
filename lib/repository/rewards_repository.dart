@@ -1,6 +1,7 @@
 import 'package:runca/features/dashboard/rewards/models/placoin_transaction_model.dart';
 import 'package:runca/features/dashboard/rewards/models/reward_model.dart';
 import 'package:runca/utility/resource/data_state.dart';
+import 'package:runca/features/dashboard/rewards/models/my_voucher_model.dart';
 
 /// Kontrak data Rewards. Cubit hanya mengenal kelas ini.
 abstract class RewardsRepository {
@@ -15,6 +16,11 @@ abstract class RewardsRepository {
 
   /// Voucher milik pengguna hasil penukaran (kode, QR, syarat).
   Future<DataState<RedeemedVoucher>> getVoucher(String voucherId);
+
+  /// Daftar voucher milik pengguna, difilter menurut [status].
+  Future<DataState<List<MyVoucherSummary>>> getMyVouchers({
+    VoucherStatus status = VoucherStatus.active,
+  });
 
   /// Riwayat transaksi PlaCoins, terbaru di atas.
   Future<DataState<List<PlaCoinTransaction>>> getCoinHistory({

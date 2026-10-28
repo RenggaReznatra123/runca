@@ -15,6 +15,7 @@ class AppAssets {
 
   // Challenge
   static const String challengeImage = 'assets/images/challenge.png';
+  static const String activityEmpty = 'assets/images/activity_empty.png';
 
   // Profile - Statistics
   static const String placoin = 'assets/images/placoin.png';
@@ -31,6 +32,7 @@ class AppAssets {
   // Rewards
   static const String gacoan = 'assets/images/gacoan.jpg';
   static const String kopken = 'assets/images/kopken.jpg';
+  static const String voucherEmpty = 'assets/images/voucher_empty.png';
 
   static const String coinSpentIcon = 'assets/images/coin_spent.jpg';
 }

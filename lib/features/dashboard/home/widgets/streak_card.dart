@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:runca/ui/color.dart';
+import 'package:runca/utility/format_utils.dart';
 
 class StreakCard extends StatelessWidget {
   const StreakCard({super.key, required this.streak});
@@ -36,7 +37,7 @@ class StreakCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '$streak-day streak',
+                  AppFormat.dayStreak(streak),
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w500,

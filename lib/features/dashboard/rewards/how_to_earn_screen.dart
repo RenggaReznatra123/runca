@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
+import 'package:runca/utility/snackbar_extension.dart';
 
 import 'cubit/how_to_earn_cubit.dart';
 import 'cubit/how_to_earn_state.dart';
@@ -27,15 +28,7 @@ class _HowToEarnView extends StatelessWidget {
   const _HowToEarnView();
 
   void _showUnavailable(BuildContext context, String page) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        SnackBar(
-          content: Text('$page belum tersedia.'),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+    context.showUnavailableSnackbar(page, duration: const Duration(seconds: 2));
   }
 
   @override

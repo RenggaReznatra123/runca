@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 
 import 'package:runca/ui/color.dart';
@@ -11,10 +10,10 @@ class SettingsLogoutDialog {
     final result = await showDialog<bool>(
       context: context,
       barrierDismissible: true,
-      barrierColor: Colors.black54,
+      barrierColor: AppPalette.overlayBlack54,
       builder: (dialogContext) {
         return Dialog(
-          backgroundColor: Colors.white,
+          backgroundColor: AppPalette.baseWhite,
           insetPadding: const EdgeInsets.symmetric(horizontal: 24),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(14),
@@ -38,10 +37,7 @@ class SettingsLogoutDialog {
                   textAlign: TextAlign.center,
                   style: AppTypography.bodyMedium(
                     color: AppPalette.profileMutedText,
-                  ).copyWith(
-                    fontSize: 14,
-                    height: 1.8,
-                  ),
+                  ).copyWith(fontSize: 14, height: 1.8),
                 ),
                 const SizedBox(height: 20),
                 Row(
@@ -82,19 +78,20 @@ class SettingsLogoutDialog {
                           style: ElevatedButton.styleFrom(
                             elevation: 0,
                             backgroundColor: AppPalette.settingsDangerButton,
-                            foregroundColor: Colors.white,
+                            foregroundColor: AppPalette.baseWhite,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(14),
                             ),
                           ),
                           child: Text(
                             'Log Out',
-                            style: AppTypography.bodyMedium(
-                              color: Colors.white,
-                            ).copyWith(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                            ),
+                            style:
+                                AppTypography.bodyMedium(
+                                  color: AppPalette.baseWhite,
+                                ).copyWith(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                ),
                           ),
                         ),
                       ),

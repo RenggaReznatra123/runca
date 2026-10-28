@@ -1,8 +1,10 @@
 import 'dart:math';
 
+import 'package:dio/dio.dart';
 import 'package:runca/config/app_assets.dart';
-import 'package:runca/data/dummy_config.dart';
 import 'package:runca/data/dummy/dummy_wallet.dart';
+import 'package:runca/data/dummy_config.dart';
+import 'package:runca/features/dashboard/rewards/models/my_voucher_model.dart';
 import 'package:runca/features/dashboard/rewards/models/placoin_transaction_model.dart';
 import 'package:runca/features/dashboard/rewards/models/reward_model.dart';
 import 'package:runca/repository/rewards_repository.dart';
@@ -17,8 +19,12 @@ class DummyRewardsRepository implements RewardsRepository {
   /// tampilan "saldo kurang" muncul.
   final DummyWallet _wallet;
 
-  /// Voucher hasil redeem, disimpan di memori dummy.
+  /// Voucher hasil redeem, disimpan di memori dummy. Mulai kosong.
   final Map<String, RedeemedVoucher> _vouchers = {};
+
+  /// ID voucher yang sudah dipakai di kasir. Belum ada aksinya di app,
+  /// jadi tab Used kosong sampai fitur itu dibuat.
+  final Set<String> _usedVoucherIds = {};
   int _voucherCounter = 0;
   final Random _random = Random();
 
@@ -106,6 +112,24 @@ class DummyRewardsRepository implements RewardsRepository {
     return '${part()}-${part()}';
   }
 
+  VoucherStatus _statusOf(RedeemedVoucher voucher) {
+    if (_usedVoucherIds.contains(voucher.id)) return VoucherStatus.used;
+    if (voucher.validUntil.isBefore(DateTime.now())) {
+      return VoucherStatus.expired;
+    }
+    return VoucherStatus.active;
+  }
+
+  MyVoucherSummary _toMySummary(RedeemedVoucher voucher) => MyVoucherSummary(
+    id: voucher.id,
+    title: voucher.title,
+    brandName: voucher.brandName,
+    category: voucher.category,
+    validUntil: voucher.validUntil,
+    status: _statusOf(voucher),
+    imageUrl: voucher.imageUrl,
+  );
+
   @override
   Future<DataState<RewardsData>> getRewards({RewardCategory? category}) async {
     await DummyConfig.simulateNetwork();
@@ -135,10 +159,18 @@ class DummyRewardsRepository implements RewardsRepository {
   Future<DataState<RewardDetailData>> getRewardDetail(String rewardId) async {
     await DummyConfig.simulateNetwork();
 
+    if (DummyConfig.scenario == DummyScenario.failure) {
+      return DummyConfig.failure<RewardDetailData>('/rewards/$rewardId');
+    }
+
+    if (DummyConfig.scenario == DummyScenario.empty) {
+      return _notFound<RewardDetailData>('/rewards/$rewardId');
+    }
+
     final detail = _findDetail(rewardId);
 
-    if (DummyConfig.scenario == DummyScenario.failure || detail == null) {
-      return DummyConfig.failure<RewardDetailData>('/rewards/$rewardId');
+    if (detail == null) {
+      return _notFound<RewardDetailData>('/rewards/$rewardId');
     }
 
     return DataStateSuccess<RewardDetailData>(
@@ -150,11 +182,17 @@ class DummyRewardsRepository implements RewardsRepository {
   Future<DataState<RedeemResult>> redeemReward(String rewardId) async {
     await DummyConfig.simulateNetwork();
 
+    if (DummyConfig.scenario == DummyScenario.failure) {
+      return DummyConfig.failure<RedeemResult>('/rewards/$rewardId/redeem');
+    }
+
+    if (DummyConfig.scenario == DummyScenario.empty) {
+      return _notFound<RedeemResult>('/rewards/$rewardId/redeem');
+    }
+
     final detail = _findDetail(rewardId);
 
-    if (DummyConfig.scenario == DummyScenario.failure ||
-        detail == null ||
-        _wallet.balance < detail.price) {
+    if (detail == null || _wallet.balance < detail.price) {
       return DummyConfig.failure<RedeemResult>('/rewards/$rewardId/redeem');
     }
 
@@ -199,13 +237,47 @@ class DummyRewardsRepository implements RewardsRepository {
   Future<DataState<RedeemedVoucher>> getVoucher(String voucherId) async {
     await DummyConfig.simulateNetwork();
 
-    final voucher = _vouchers[voucherId];
-
-    if (DummyConfig.scenario == DummyScenario.failure || voucher == null) {
+    if (DummyConfig.scenario == DummyScenario.failure) {
       return DummyConfig.failure<RedeemedVoucher>('/vouchers/$voucherId');
     }
 
+    if (DummyConfig.scenario == DummyScenario.empty) {
+      return _notFound<RedeemedVoucher>('/vouchers/$voucherId');
+    }
+
+    final voucher = _vouchers[voucherId];
+
+    if (voucher == null) {
+      return _notFound<RedeemedVoucher>('/vouchers/$voucherId');
+    }
+
     return DataStateSuccess<RedeemedVoucher>(voucher);
+  }
+
+  @override
+  Future<DataState<List<MyVoucherSummary>>> getMyVouchers({
+    VoucherStatus status = VoucherStatus.active,
+  }) async {
+    await DummyConfig.simulateNetwork();
+
+    switch (DummyConfig.scenario) {
+      case DummyScenario.failure:
+        return DummyConfig.failure<List<MyVoucherSummary>>('/vouchers');
+      case DummyScenario.empty:
+        return const DataStateSuccess<List<MyVoucherSummary>>([]);
+      case DummyScenario.data:
+        break;
+    }
+
+    // Terbaru di atas: voucher hasil redeem masuk paling akhir ke map.
+    final items = _vouchers.values
+        .map(_toMySummary)
+        .where((voucher) => voucher.status == status)
+        .toList()
+        .reversed
+        .toList(growable: false);
+
+    return DataStateSuccess<List<MyVoucherSummary>>(items);
   }
 
   @override
@@ -240,8 +312,13 @@ class DummyRewardsRepository implements RewardsRepository {
   Future<DataState<List<EarnMethod>>> getEarnMethods() async {
     await DummyConfig.simulateNetwork();
 
-    if (DummyConfig.scenario == DummyScenario.failure) {
-      return DummyConfig.failure<List<EarnMethod>>('/placoins/earn-methods');
+    switch (DummyConfig.scenario) {
+      case DummyScenario.failure:
+        return DummyConfig.failure<List<EarnMethod>>('/placoins/earn-methods');
+      case DummyScenario.empty:
+        return const DataStateSuccess<List<EarnMethod>>([]);
+      case DummyScenario.data:
+        break;
     }
 
     return const DataStateSuccess<List<EarnMethod>>([
@@ -266,5 +343,17 @@ class DummyRewardsRepository implements RewardsRepository {
             'multipliers.',
       ),
     ]);
+  }
+
+  DataStateError<T> _notFound<T>(String path) {
+    final requestOptions = RequestOptions(path: path);
+    return DataStateError<T>(
+      DioException(
+        requestOptions: requestOptions,
+        type: DioExceptionType.badResponse,
+        message: 'Resource not found.',
+        response: Response(requestOptions: requestOptions, statusCode: 404),
+      ),
+    );
   }
 }

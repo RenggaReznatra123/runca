@@ -7,6 +7,10 @@ class AppPalette {
   // Base
   static const Color baseWhite = Color(0xFFFFFFFF);
   static const Color baseBlack = Color(0xFF000000);
+  // Transparan penuh untuk pengganti Colors.transparent.
+  static const Color transparent = Color(0x00000000);
+  // Overlay hitam 54% untuk pengganti Colors.black54.
+  static const Color overlayBlack54 = Color(0x8A000000);
 
   // Text
   static const Color textNeutralPrimary = Color(0xFF333333);
