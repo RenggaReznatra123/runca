@@ -16,6 +16,10 @@ class AppAssets {
   // Challenge
   static const String challengeImage = 'assets/images/challenge.png';
   static const String activityEmpty = 'assets/images/activity_empty.png';
+  static const String challengeActiveEmpty =
+      'assets/images/challenge_active_empty.png';
+  static const String challengeHistoryEmpty =
+      'assets/images/challenge_history_empty.png';
 
   // Profile - Statistics
   static const String placoin = 'assets/images/placoin.png';
@@ -28,11 +32,14 @@ class AppAssets {
   static const String sevenDayStreak = 'assets/images/7day_streak.png';
   static const String tenRuns = 'assets/images/10_runs.png';
   static const String lockedAchievement = 'assets/images/locked.png';
+  static const String fiftyKmTotal = 'assets/images/50km_total.png';
 
   // Rewards
   static const String gacoan = 'assets/images/gacoan.jpg';
   static const String kopken = 'assets/images/kopken.jpg';
   static const String voucherEmpty = 'assets/images/voucher_empty.png';
-
   static const String coinSpentIcon = 'assets/images/coin_spent.jpg';
+
+  // Profile - Edit Profile
+  static const String avatarDede = 'assets/images/avatar_dede.png';
 }

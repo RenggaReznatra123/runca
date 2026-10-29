@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:runca/features/dashboard/home/leaderboard/leaderboard_screen.dart';
+import 'package:runca/features/dashboard/profile/achievements_screen.dart';
 import 'package:runca/features/dashboard/profile/cubit/profile_cubit.dart';
 import 'package:runca/features/dashboard/profile/cubit/profile_state.dart';
 import 'package:runca/features/dashboard/profile/models/profile_model.dart';
@@ -9,15 +10,12 @@ import 'package:runca/features/dashboard/rewards/my_vouchers_screen.dart';
 import 'package:runca/features/dashboard/rewards/rewards_screen.dart';
 import 'package:runca/features/dashboard/settings/settings_screen.dart';
 import 'package:runca/ui/color.dart';
+import 'package:runca/features/dashboard/profile/edit_profile_screen.dart';
 import 'package:runca/ui/typography.dart';
 import 'package:runca/utility/snackbar_extension.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
-
-  void _showUnavailable(BuildContext context, String page) {
-    context.showUnavailableSnackbar(page, duration: const Duration(seconds: 2));
-  }
 
   Future<void> _openRewards(BuildContext context, ProfileCubit cubit) async {
     await Navigator.of(context).push<void>(
@@ -48,6 +46,28 @@ class ProfileScreen extends StatelessWidget {
     Navigator.of(
       context,
     ).push(MaterialPageRoute<void>(builder: (_) => const LeaderboardScreen()));
+  }
+
+  void _openAchievements(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const AchievementsScreen()));
+  }
+
+  Future<void> _openEditProfile(
+    BuildContext context,
+    ProfileCubit cubit,
+  ) async {
+    final updated = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(builder: (_) => const EditProfileScreen()),
+    );
+
+    if (updated != true || !context.mounted || cubit.isClosed) return;
+
+    await cubit.refresh();
+    if (!context.mounted) return;
+
+    context.showSuccessSnackbar('Profile updated successfully');
   }
 
   @override
@@ -98,14 +118,14 @@ class ProfileScreen extends StatelessWidget {
                           ),
                         );
                       },
-                      onEditProfileTap: () =>
-                          _showUnavailable(context, 'Edit Profile'),
+                      onEditProfileTap: () {
+                        _openEditProfile(context, cubit);
+                      },
                       onCoinsTap: () {
                         _openRewards(context, cubit);
                       },
                       onRankTap: () => _openLeaderboard(context),
-                      onSeeAllAchievements: () =>
-                          _showUnavailable(context, 'All achievements'),
+                      onSeeAllAchievements: () => _openAchievements(context),
                       onVouchersTap: () => _openVouchers(context, cubit),
                     ),
                   );

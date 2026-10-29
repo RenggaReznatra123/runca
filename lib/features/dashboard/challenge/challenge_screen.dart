@@ -4,7 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/shared_view/empty_view.dart';
 import 'package:runca/features/dashboard/activity/widgets/activity_state_view.dart';
-import 'package:runca/ui/typography.dart';
 import 'package:runca/features/dashboard/rewards/rewards_screen.dart';
 
 import 'challenge_detail_screen.dart';
@@ -13,6 +12,7 @@ import 'cubit/challenge_state.dart';
 import 'widgets/challenge_filter.dart';
 import 'widgets/challenge_header.dart';
 import 'widgets/challenge_item.dart';
+import 'widgets/challenge_status_tabs.dart';
 import 'widgets/challenge_tabs.dart';
 
 class ChallengeScreen extends StatelessWidget {
@@ -74,8 +74,8 @@ class _ChallengeView extends StatelessWidget {
                     index: state.selectedTab.index,
                     children: [
                       _DiscoverTab(state: state),
-                      const _ComingSoonTab(label: 'Active'),
-                      const _ComingSoonTab(label: 'History'),
+                      ChallengeActiveTab(state: state),
+                      ChallengeHistoryTab(state: state),
                     ],
                   );
                 },
@@ -172,23 +172,6 @@ class _DiscoverTab extends StatelessWidget {
             ),
           ),
       ],
-    );
-  }
-}
-
-/// Sementara untuk Active dan History, karena belum ada desain di Figma.
-class _ComingSoonTab extends StatelessWidget {
-  const _ComingSoonTab({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Text(
-        '$label coming soon.',
-        style: AppTypography.bodyMedium(color: AppPalette.textNeutralSecondary),
-      ),
     );
   }
 }

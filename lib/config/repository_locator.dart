@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 
 import 'package:runca/data/dummy/dummy_activity_repository.dart';
 import 'package:runca/data/dummy/dummy_challenge_repository.dart';
+import 'package:runca/data/dummy/dummy_help_repository.dart';
 import 'package:runca/data/dummy/dummy_progress_repository.dart';
 import 'package:runca/data/dummy/dummy_profile_repository.dart';
 import 'package:runca/data/dummy/dummy_rewards_repository.dart';
@@ -13,6 +14,7 @@ import 'package:runca/data/dummy/dummy_wallet.dart';
 
 import 'package:runca/repository/activity_repository.dart';
 import 'package:runca/repository/challenge_repository.dart';
+import 'package:runca/repository/help_repository.dart';
 import 'package:runca/repository/progress_repository.dart';
 import 'package:runca/repository/profile_repository.dart';
 import 'package:runca/repository/rewards_repository.dart';
@@ -53,6 +55,8 @@ void registerRepositories(GetIt locator) {
   locator.registerLazySingleton<SettingsRepository>(
     () => DummySettingsRepository(locator.get<UserPreference>()),
   );
+
+  locator.registerLazySingleton<HelpRepository>(() => DummyHelpRepository());
 
   locator.registerLazySingleton<NotificationsRepository>(
     () => DummyNotificationsRepository(),

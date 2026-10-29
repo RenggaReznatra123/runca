@@ -150,4 +150,6 @@ class AppPalette {
   static const Color profileDangerText = Color(0xFFFF3030);
   static const Color settingsDangerButton = Color(0xFFFF3838);
   static const Color achievementGold = Color(0xFFF5B82E);
+  // Isi kolom nonaktif di Edit Profile (perkiraan dari Figma, hex belum dicek).
+  static const Color profileDisabledFill = Color(0xFFDCE3EC);
 }

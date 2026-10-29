@@ -5,9 +5,13 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:runca/config/service_locator.dart';
 import 'package:runca/features/auth/cubit/auth_cubit.dart';
 import 'package:runca/features/auth/login_screen.dart';
+import 'package:runca/features/dashboard/settings/change_password_screen.dart';
 import 'package:runca/features/dashboard/settings/cubit/settings_cubit.dart';
 import 'package:runca/features/dashboard/settings/cubit/settings_state.dart';
+import 'package:runca/features/dashboard/settings/faq_screen.dart';
+import 'package:runca/features/dashboard/settings/legal_document_screen.dart';
 import 'package:runca/features/dashboard/settings/models/app_settings.dart';
+import 'package:runca/features/dashboard/settings/models/help_model.dart';
 import 'package:runca/features/dashboard/settings/widgets/settings_choice_sheet.dart';
 import 'package:runca/features/dashboard/settings/widgets/settings_header.dart';
 import 'package:runca/features/dashboard/settings/widgets/settings_logout_dialog.dart';
@@ -24,6 +28,28 @@ class SettingsScreen extends StatelessWidget {
 
   void _showMessage(BuildContext context, String message) {
     context.showInfoSnackbar(message, duration: const Duration(seconds: 2));
+  }
+
+  Future<void> _openChangePassword(BuildContext context) async {
+    final changed = await Navigator.of(context).push<bool>(
+      MaterialPageRoute<bool>(builder: (_) => const ChangePasswordScreen()),
+    );
+
+    if (changed != true || !context.mounted) return;
+
+    context.showSuccessSnackbar('Password successfully changed!');
+  }
+
+  void _openFaq(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const FaqScreen()));
+  }
+
+  void _openLegalDocument(BuildContext context, LegalDocumentType type) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => LegalDocumentScreen(type: type)),
+    );
   }
 
   Future<void> _selectLanguage(
@@ -131,6 +157,17 @@ class SettingsScreen extends StatelessWidget {
                             state: state,
                             version:
                                 'Plarita v${serviceLocator.get<PackageInfo>().version}',
+                            onChangePassword: () =>
+                                _openChangePassword(context),
+                            onFaq: () => _openFaq(context),
+                            onPrivacyPolicy: () => _openLegalDocument(
+                              context,
+                              LegalDocumentType.privacyPolicy,
+                            ),
+                            onTermsOfService: () => _openLegalDocument(
+                              context,
+                              LegalDocumentType.termsOfService,
+                            ),
                             onUnavailable: (page) =>
                                 _showUnavailable(context, page),
                             onSelectLanguage: (selected) =>

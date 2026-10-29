@@ -12,6 +12,10 @@ class SettingsList extends StatelessWidget {
   const SettingsList({
     required this.state,
     required this.version,
+    required this.onChangePassword,
+    required this.onFaq,
+    required this.onPrivacyPolicy,
+    required this.onTermsOfService,
     required this.onUnavailable,
     required this.onSelectLanguage,
     required this.onSelectUnits,
@@ -23,6 +27,10 @@ class SettingsList extends StatelessWidget {
 
   final SettingsState state;
   final String version;
+  final VoidCallback onChangePassword;
+  final VoidCallback onFaq;
+  final VoidCallback onPrivacyPolicy;
+  final VoidCallback onTermsOfService;
   final ValueChanged<String> onUnavailable;
   final ValueChanged<AppLanguage> onSelectLanguage;
   final ValueChanged<UnitSystem> onSelectUnits;
@@ -43,7 +51,7 @@ class SettingsList extends StatelessWidget {
             SettingsMenuItem(
               title: 'Change Password',
               showDivider: false,
-              onTap: () => onUnavailable('Change Password'),
+              onTap: onChangePassword,
             ),
           ],
         ),
@@ -78,7 +86,7 @@ class SettingsList extends StatelessWidget {
         SettingsSection(
           title: 'Help',
           children: [
-            SettingsMenuItem(title: 'FAQ', onTap: () => onUnavailable('FAQ')),
+            SettingsMenuItem(title: 'FAQ', onTap: onFaq),
             SettingsMenuItem(
               title: 'Contact Support',
               showDivider: false,
@@ -90,14 +98,11 @@ class SettingsList extends StatelessWidget {
         SettingsSection(
           title: 'About',
           children: [
-            SettingsMenuItem(
-              title: 'Privacy Policy',
-              onTap: () => onUnavailable('Privacy Policy'),
-            ),
+            SettingsMenuItem(title: 'Privacy Policy', onTap: onPrivacyPolicy),
             SettingsMenuItem(
               title: 'Terms of Service',
               showDivider: false,
-              onTap: () => onUnavailable('Terms of Service'),
+              onTap: onTermsOfService,
             ),
           ],
         ),
