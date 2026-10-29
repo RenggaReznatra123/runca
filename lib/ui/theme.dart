@@ -10,7 +10,7 @@ class AppTheme {
 
   static ThemeData get light {
     const scheme = ColorScheme.light(
-      primary: AppPalette.bgFillPrimary,
+      primary: AppPalette.brandTosca,
       onPrimary: AppPalette.baseWhite,
       secondary: AppPalette.bgFillSecondary,
       surface: AppPalette.bg,
@@ -41,7 +41,7 @@ class AppTheme {
 
   static ThemeData get dark {
     const scheme = ColorScheme.dark(
-      primary: AppPalette.bgFillPrimary,
+      primary: AppPalette.brandTosca,
       onPrimary: AppPalette.baseWhite,
       secondary: AppPalette.bgFillSecondary,
       surface: AppPalette.bgBlack,
