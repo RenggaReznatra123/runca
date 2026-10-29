@@ -84,7 +84,7 @@ class ActivityEmptyView extends StatelessWidget {
         child: Align(
           alignment: Alignment.topCenter,
           child: Image.asset(
-            AppAssets.activityEmpty,
+            AppAssets.challengeActiveEmpty,
             width: 108,
             height: 91,
             fit: BoxFit.contain,

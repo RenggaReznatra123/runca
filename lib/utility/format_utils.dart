@@ -74,6 +74,16 @@ class AppFormat {
     return DateFormat('MMM d, y', 'en_US').format(date);
   }
 
+  /// DateTime(2005, 3, 22) -> '22-03-2005'
+  static String birthDate(DateTime date) {
+    return DateFormat('dd-MM-yyyy', 'en_US').format(date);
+  }
+
+  /// DateTime(2025, 8, 1) -> 'August 1, 2025'
+  static String longDate(DateTime date) {
+    return DateFormat('MMMM d, y', 'en_US').format(date);
+  }
+
   /// 5.123 -> '5.12' (angka saja, satuan ditulis di label)
   static String distanceNumber(double km) => km.toStringAsFixed(2);
 

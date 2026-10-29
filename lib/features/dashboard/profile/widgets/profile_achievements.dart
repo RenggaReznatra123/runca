@@ -93,6 +93,8 @@ class _AchievementCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final completedAt = achievement.completedAt;
+
     return Container(
       width: 138,
       padding: const EdgeInsets.fromLTRB(8, 10, 8, 9),
@@ -102,11 +104,7 @@ class _AchievementCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Expanded(
-            child: Center(
-              child: _achievementImage(),
-            ),
-          ),
+          Expanded(child: Center(child: _achievementImage())),
           const SizedBox(height: 5),
           Text(
             achievement.title,
@@ -124,15 +122,17 @@ class _AchievementCard extends StatelessWidget {
               color: AppPalette.textNeutralSecondary,
             ).copyWith(fontSize: 10),
           ),
-          const SizedBox(height: 3),
-          Text(
-            AppFormat.shortDate(achievement.completedAt),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: AppTypography.bodySmall(
-              color: AppPalette.textNeutralSecondary,
-            ).copyWith(fontSize: 10),
-          ),
+          if (completedAt != null) ...[
+            const SizedBox(height: 3),
+            Text(
+              AppFormat.shortDate(completedAt),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.bodySmall(
+                color: AppPalette.textNeutralSecondary,
+              ).copyWith(fontSize: 10),
+            ),
+          ],
         ],
       ),
     );

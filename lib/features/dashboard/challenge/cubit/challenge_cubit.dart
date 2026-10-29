@@ -14,7 +14,12 @@ class ChallengeCubit extends Cubit<ChallengeState> {
   }
 
   final ChallengeRepository _repository;
+
+  // Dipakai untuk mengabaikan jawaban lama kalau ada permintaan yang lebih baru.
+  // Tiap daftar punya penghitung sendiri.
   int _requestId = 0;
+  int _activeRequestId = 0;
+  int _historyRequestId = 0;
 
   Future<void> loadChallenges() => _fetch(showLoading: true, withBalance: true);
 
@@ -23,12 +28,90 @@ class ChallengeCubit extends Cubit<ChallengeState> {
   void selectTab(ChallengeTab tab) {
     if (tab == state.selectedTab) return;
     emit(state.copyWith(selectedTab: tab));
+
+    // Active dan History dimuat (ulang) setiap tabnya dibuka.
+    switch (tab) {
+      case ChallengeTab.discover:
+        break;
+      case ChallengeTab.active:
+        if (state.activeStatus == ChallengeStatus.success) {
+          _fetchActive();
+        } else {
+          loadActive();
+        }
+      case ChallengeTab.history:
+        if (state.historyStatus == ChallengeStatus.success) {
+          _fetchHistory();
+        } else {
+          loadHistory();
+        }
+    }
   }
 
   void selectFilter(ChallengeFilter filter) {
     if (filter == state.selectedFilter) return;
     emit(state.copyWith(selectedFilter: filter));
     _fetch(showLoading: false);
+  }
+
+  /// Chip di tab History: daftar lama tetap tampil sampai hasil baru datang.
+  void selectHistoryFilter(ChallengeFilter filter) {
+    if (filter == state.historyFilter) return;
+    emit(state.copyWith(historyFilter: filter));
+    _fetchHistory();
+  }
+
+  /// Muat awal dan Try Again di tab Active: layar menampilkan loading.
+  Future<void> loadActive() async {
+    emit(state.copyWith(activeStatus: ChallengeStatus.loading));
+    await _fetchActive();
+  }
+
+  /// Muat awal dan Try Again di tab History: layar menampilkan loading.
+  Future<void> loadHistory() async {
+    emit(state.copyWith(historyStatus: ChallengeStatus.loading));
+    await _fetchHistory();
+  }
+
+  Future<void> _fetchActive() async {
+    final requestId = ++_activeRequestId;
+
+    final result = await _repository.getChallenges(
+      kind: ChallengeListKind.active,
+    );
+    if (isClosed || requestId != _activeRequestId) return;
+
+    if (result is DataStateSuccess<List<ChallengeModel>>) {
+      emit(
+        state.copyWith(
+          activeStatus: ChallengeStatus.success,
+          activeChallenges: result.data ?? const [],
+        ),
+      );
+    } else {
+      emit(state.copyWith(activeStatus: ChallengeStatus.failure));
+    }
+  }
+
+  Future<void> _fetchHistory() async {
+    final requestId = ++_historyRequestId;
+
+    final result = await _repository.getChallenges(
+      type: state.historyFilter.type,
+      kind: ChallengeListKind.history,
+    );
+    if (isClosed || requestId != _historyRequestId) return;
+
+    if (result is DataStateSuccess<List<ChallengeModel>>) {
+      emit(
+        state.copyWith(
+          historyStatus: ChallengeStatus.success,
+          historyChallenges: result.data ?? const [],
+        ),
+      );
+    } else {
+      emit(state.copyWith(historyStatus: ChallengeStatus.failure));
+    }
   }
 
   Future<void> _fetch({

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:runca/config/user_preference.dart';
 import 'package:runca/data/dummy_config.dart';
 import 'package:runca/features/dashboard/settings/models/app_settings.dart';
+import 'package:runca/features/dashboard/settings/models/change_password_result.dart';
 import 'package:runca/repository/settings_repository.dart';
 import 'package:runca/utility/resource/data_state.dart';
 
@@ -14,6 +15,9 @@ class DummySettingsRepository implements SettingsRepository {
   static const String _darkModeKey = 'settings_dark_mode';
 
   final UserPreference _userPreference;
+
+  /// Password dummy di memori. Terpisah dari akun login dummy.
+  String _password = 'Runca123!';
 
   @override
   Future<DataState<AppSettings>> getSettings() async {
@@ -52,6 +56,30 @@ class DummySettingsRepository implements SettingsRepository {
     } catch (error) {
       return _storageFailure<AppSettings>('/settings', error);
     }
+  }
+
+  @override
+  Future<DataState<ChangePasswordResult>> changePassword({
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    await DummyConfig.simulateNetwork();
+
+    if (DummyConfig.scenario == DummyScenario.failure) {
+      return DummyConfig.failure<ChangePasswordResult>('/settings/password');
+    }
+
+    if (currentPassword != _password) {
+      return const DataStateSuccess<ChangePasswordResult>(
+        ChangePasswordResult.wrongCurrentPassword,
+      );
+    }
+
+    _password = newPassword;
+
+    return const DataStateSuccess<ChangePasswordResult>(
+      ChangePasswordResult.success,
+    );
   }
 
   @override

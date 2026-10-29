@@ -19,6 +19,11 @@ class CustomTextFormField extends StatelessWidget {
     this.textInputAction,
     this.onFieldSubmitted,
     this.isRequired = false,
+    this.readOnly = false,
+    this.fillColor,
+    this.suffixText,
+    this.textColor,
+    this.helperText, // BARU
   });
 
   final String? label;
@@ -35,6 +40,21 @@ class CustomTextFormField extends StatelessWidget {
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onFieldSubmitted;
   final bool isRequired;
+
+  /// Hanya tampil, tidak bisa diketik.
+  final bool readOnly;
+
+  /// Warna isi kolom. Null berarti tanpa isi (default).
+  final Color? fillColor;
+
+  /// Teks di ujung kanan kolom, contoh: 'cm'.
+  final String? suffixText;
+
+  /// Warna teks isi. Null berarti textNeutralPrimary (default).
+  final Color? textColor;
+
+  /// Teks bantu di bawah kolom. Diganti pesan error kalau validasi gagal.
+  final String? helperText; // BARU
 
   static const double _labelFontSize = 14;
   static const double _hintFontSize = 14;
@@ -60,9 +80,7 @@ class CustomTextFormField extends StatelessWidget {
                 if (isRequired)
                   const TextSpan(
                     text: ' *',
-                    style: TextStyle(
-                      color: AppPalette.textDanger,
-                    ),
+                    style: TextStyle(color: AppPalette.textDanger),
                   ),
               ],
             ),
@@ -82,15 +100,32 @@ class CustomTextFormField extends StatelessWidget {
           onChanged: onChanged,
           maxLines: obscureText ? 1 : maxLines,
           enabled: enabled,
+          readOnly: readOnly,
           textInputAction: textInputAction,
           onFieldSubmitted: onFieldSubmitted,
           style: theme.textTheme.bodyMedium?.copyWith(
             fontSize: _hintFontSize,
-            color: AppPalette.textNeutralPrimary,
+            color: textColor ?? AppPalette.textNeutralPrimary,
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: theme.textTheme.bodyMedium?.copyWith(
+              fontSize: _hintFontSize,
+              fontWeight: FontWeight.w400,
+              color: AppPalette.textNeutralSecondary,
+            ),
+            helperText: helperText, // BARU
+            helperMaxLines: 2, // BARU
+            helperStyle: theme.textTheme.bodySmall?.copyWith(
+              // BARU
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              color: AppPalette.profileMutedText,
+            ),
+            filled: fillColor != null,
+            fillColor: fillColor,
+            suffixText: suffixText,
+            suffixStyle: theme.textTheme.bodyMedium?.copyWith(
               fontSize: _hintFontSize,
               fontWeight: FontWeight.w400,
               color: AppPalette.textNeutralSecondary,
@@ -117,9 +152,7 @@ class CustomTextFormField extends StatelessWidget {
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(_borderRadius),
-              borderSide: const BorderSide(
-                color: AppPalette.borderNeutral,
-              ),
+              borderSide: const BorderSide(color: AppPalette.borderNeutral),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(_borderRadius),
@@ -130,9 +163,7 @@ class CustomTextFormField extends StatelessWidget {
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(_borderRadius),
-              borderSide: const BorderSide(
-                color: AppPalette.textDanger,
-              ),
+              borderSide: const BorderSide(color: AppPalette.textDanger),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(_borderRadius),

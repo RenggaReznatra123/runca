@@ -23,6 +23,7 @@ class DummyChallengeRepository implements ChallengeRepository {
   @override
   Future<DataState<List<ChallengeModel>>> getChallenges({
     ChallengeType? type,
+    ChallengeListKind kind = ChallengeListKind.discover,
   }) async {
     await DummyConfig.simulateNetwork();
 
@@ -32,6 +33,12 @@ class DummyChallengeRepository implements ChallengeRepository {
       case DummyScenario.empty:
         return const DataStateSuccess<List<ChallengeModel>>([]);
       case DummyScenario.data:
+        // Belum ada challenge yang diikuti atau selesai (Join Challenge belum
+        // dibuat), jadi Active dan History kosong.
+        if (kind != ChallengeListKind.discover) {
+          return const DataStateSuccess<List<ChallengeModel>>([]);
+        }
+
         final challenges = _buildChallenges();
         final filtered = type == null
             ? challenges

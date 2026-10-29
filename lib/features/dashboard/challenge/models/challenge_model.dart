@@ -8,6 +8,9 @@ enum ChallengeType {
   final String label;
 }
 
+/// Daftar challenge yang diminta ke repository (sesuai tab di layar).
+enum ChallengeListKind { discover, active, history }
+
 class ChallengeModel {
   const ChallengeModel({
     required this.id,
