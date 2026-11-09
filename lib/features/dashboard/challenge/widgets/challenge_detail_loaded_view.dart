@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:runca/features/dashboard/challenge/models/challenge_model.dart';
 import 'package:runca/features/dashboard/challenge/widgets/challenge_detail_header.dart';
 import 'package:runca/features/dashboard/challenge/widgets/challenge_detail_sheet.dart';
+import 'package:runca/features/dashboard/run/run_screen.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
-import 'package:runca/utility/snackbar_extension.dart';
 
 class ChallengeDetailLoadedView extends StatelessWidget {
   const ChallengeDetailLoadedView({super.key, required this.challenge});
@@ -48,9 +48,8 @@ class ChallengeDetailLoadedView extends StatelessWidget {
               ),
             ),
             _JoinBar(
-              onJoin: () => context.showUnavailableSnackbar(
-                'Join Challenge',
-                hideCurrent: false,
+              onJoin: () => Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const RunScreen()),
               ),
             ),
           ],

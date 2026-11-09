@@ -8,8 +8,8 @@ import 'cubit/dashboard_cubit.dart';
 import 'cubit/dashboard_state.dart';
 import 'home/home_screen.dart';
 import 'profile/profile_screen.dart';
+import 'run/run_screen.dart';
 import 'widgets/dashboard_bottom_navigation.dart';
-import 'widgets/run_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -39,7 +39,6 @@ class _DashboardView extends StatelessWidget {
             children: const [
               HomeScreen(),
               ChallengeScreen(),
-              RunScreen(),
               ActivityScreen(),
               ProfileScreen(),
             ],
@@ -47,6 +46,7 @@ class _DashboardView extends StatelessWidget {
           bottomNavigationBar: DashboardBottomNavigation(
             selectedTab: state.selectedTab,
             onSelect: (tab) => _select(context, tab),
+            onRun: () => _openRun(context),
           ),
         );
       },
@@ -55,5 +55,12 @@ class _DashboardView extends StatelessWidget {
 
   void _select(BuildContext context, DashboardTab tab) {
     context.read<DashboardCubit>().selectTab(tab);
+  }
+
+  /// Layar lari dibuka di atas dashboard (tanpa navbar), bukan sebagai tab.
+  void _openRun(BuildContext context) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const RunScreen()));
   }
 }

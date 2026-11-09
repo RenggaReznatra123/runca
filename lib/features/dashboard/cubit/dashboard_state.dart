@@ -1,6 +1,6 @@
 import '../activity/cubit/activity_state.dart';
 
-enum DashboardTab { home, challenge, run, activity, profile }
+enum DashboardTab { home, challenge, activity, profile }
 
 class DashboardState {
   const DashboardState({
