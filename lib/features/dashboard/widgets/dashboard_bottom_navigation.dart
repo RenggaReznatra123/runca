@@ -6,11 +6,13 @@ class DashboardBottomNavigation extends StatelessWidget {
   const DashboardBottomNavigation({
     required this.selectedTab,
     required this.onSelect,
+    required this.onRun,
     super.key,
   });
 
   final DashboardTab selectedTab;
   final ValueChanged<DashboardTab> onSelect;
+  final VoidCallback onRun;
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +50,7 @@ class DashboardBottomNavigation extends StatelessWidget {
               Expanded(
                 child: Center(
                   child: GestureDetector(
-                    onTap: () => onSelect(DashboardTab.run),
+                    onTap: () => onRun(),
                     child: Container(
                       width: 48,
                       height: 48,

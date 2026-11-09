@@ -11,10 +11,12 @@ import 'package:runca/data/dummy/dummy_notifications_repository.dart';
 import 'package:runca/data/dummy/dummy_leaderboard_repository.dart';
 import 'package:runca/data/dummy/dummy_home_repository.dart';
 import 'package:runca/data/dummy/dummy_wallet.dart';
+import 'package:runca/data/geolocator_location_repository.dart';
 
 import 'package:runca/repository/activity_repository.dart';
 import 'package:runca/repository/challenge_repository.dart';
 import 'package:runca/repository/help_repository.dart';
+import 'package:runca/repository/location_repository.dart';
 import 'package:runca/repository/progress_repository.dart';
 import 'package:runca/repository/profile_repository.dart';
 import 'package:runca/repository/rewards_repository.dart';
@@ -67,4 +69,10 @@ void registerRepositories(GetIt locator) {
   );
 
   locator.registerLazySingleton<HomeRepository>(() => DummyHomeRepository());
+
+  // Lokasi memakai GPS perangkat. Untuk emulator tanpa GPS, ganti ke
+  // DummyLocationRepository() (import data/dummy/dummy_location_repository.dart).
+  locator.registerLazySingleton<LocationRepository>(
+    () => GeolocatorLocationRepository(),
+  );
 }

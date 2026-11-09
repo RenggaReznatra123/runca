@@ -124,6 +124,10 @@ class AppFormat {
     final distance = NumberFormat('0.##', 'en_US').format(km);
     return '$distance KM';
   }
+    /// null -> '-'-"' (belum ada pace), 311 -> '5'11"'
+  static String paceOrPlaceholder(int? secondsPerKm) {
+    return secondsPerKm == null ? "-'-\"" : pace(secondsPerKm);
+  }
 
   /// Format relatif untuk waktu notifikasi.
   static String notificationTime(DateTime dateTime, {DateTime? now}) {

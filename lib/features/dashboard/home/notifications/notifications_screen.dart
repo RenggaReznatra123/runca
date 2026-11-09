@@ -5,7 +5,7 @@ import 'package:runca/features/dashboard/cubit/dashboard_cubit.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
 import 'package:runca/utility/snackbar_extension.dart';
-
+import 'package:runca/features/dashboard/run/run_screen.dart';
 import 'cubit/notifications_cubit.dart';
 import 'cubit/notifications_state.dart';
 import 'models/notification_model.dart';
@@ -92,8 +92,11 @@ class _NotificationsView extends StatelessWidget {
         _openActivity(context, ActivityTab.activities);
       case NotificationType.weeklyProgress:
         _openActivity(context, ActivityTab.progress);
-      case NotificationType.reminder:
       case NotificationType.streak:
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute<void>(builder: (_) => const RunScreen()));
+      case NotificationType.reminder:
         context.showUnavailableSnackbar(actionLabel, hideCurrent: false);
     }
   }

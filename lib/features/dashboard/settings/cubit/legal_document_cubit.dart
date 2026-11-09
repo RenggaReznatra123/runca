@@ -8,12 +8,9 @@ import '../models/help_model.dart';
 import 'legal_document_state.dart';
 
 class LegalDocumentCubit extends Cubit<LegalDocumentState> {
-  LegalDocumentCubit({
-    required LegalDocumentType type,
-    HelpRepository? repository,
-  }) : _type = type,
-       _repository = repository ?? serviceLocator.get<HelpRepository>(),
-       super(const LegalDocumentState()) {
+  LegalDocumentCubit({required this._type, HelpRepository? repository})
+    : _repository = repository ?? serviceLocator.get<HelpRepository>(),
+      super(const LegalDocumentState()) {
     loadDocument();
   }
 
