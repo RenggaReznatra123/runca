@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'package:runca/ui/color.dart';
-import 'package:runca/ui/shared_view/app_image.dart';
 import 'package:runca/ui/typography.dart';
 import 'package:runca/utility/format_utils.dart';
 
 import '../../activity/models/activity_model.dart';
+import '../../activity/widgets/route_map_preview.dart';
 
 /// Aktivitas terakhir di Home: thumbnail peta, info, dan empat statistik.
 class LastActivityCard extends StatelessWidget {
@@ -37,8 +37,9 @@ class LastActivityCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: AppImage(
-                path: activity.mapImageUrl,
+              child: RouteMapPreview(
+                route: activity.route,
+                imagePath: activity.mapImageUrl,
                 width: _mapWidth,
                 height: _mapHeight,
               ),

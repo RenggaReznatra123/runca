@@ -7,18 +7,27 @@ import 'package:runca/ui/color.dart';
 
 import '../models/location_fix.dart';
 
-/// Peta nyata dengan titik lokasi pengguna dan lingkaran akurasi.
+/// Peta nyata dengan titik lokasi pengguna, lingkaran akurasi, dan (kalau
+/// ada) garis rute.
 class RunMapView extends StatelessWidget {
   const RunMapView({
     super.key,
     required this.controller,
     required this.position,
     required this.onMapReady,
+    this.route = const [],
+    this.onGesture,
   });
 
   final MapController controller;
   final LocationFix? position;
   final VoidCallback onMapReady;
+
+  /// Titik-titik rute. Garis baru tergambar kalau ada minimal dua titik.
+  final List<LocationFix> route;
+
+  /// Dipanggil saat pengguna menggeser atau men-zoom peta dengan jarinya.
+  final VoidCallback? onGesture;
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +48,9 @@ class RunMapView extends StatelessWidget {
           flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
         ),
         onMapReady: onMapReady,
+        onPositionChanged: (camera, hasGesture) {
+          if (hasGesture) onGesture?.call();
+        },
       ),
       children: [
         TileLayer(
@@ -46,6 +58,19 @@ class RunMapView extends StatelessWidget {
           userAgentPackageName: MapConfig.userAgentPackageName,
           maxNativeZoom: 19,
         ),
+        if (route.length >= 2)
+          PolylineLayer(
+            polylines: [
+              Polyline(
+                points: [
+                  for (final item in route)
+                    LatLng(item.latitude, item.longitude),
+                ],
+                strokeWidth: 4,
+                color: AppPalette.profileAccent,
+              ),
+            ],
+          ),
         if (point != null && fix != null)
           CircleLayer(
             circles: [

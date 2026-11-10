@@ -10,6 +10,7 @@ import 'package:runca/data/dummy/dummy_settings_repository.dart';
 import 'package:runca/data/dummy/dummy_notifications_repository.dart';
 import 'package:runca/data/dummy/dummy_leaderboard_repository.dart';
 import 'package:runca/data/dummy/dummy_home_repository.dart';
+import 'package:runca/data/dummy/dummy_location_repository.dart';
 import 'package:runca/data/dummy/dummy_wallet.dart';
 import 'package:runca/data/geolocator_location_repository.dart';
 
@@ -25,6 +26,10 @@ import 'package:runca/repository/notifications_repository.dart';
 import 'package:runca/repository/leaderboard_repository.dart';
 import 'package:runca/repository/home_repository.dart';
 import 'package:runca/config/user_preference.dart';
+
+/// Nyalakan untuk menguji lari di emulator tanpa keluar rumah (titik GPS
+/// tiruan bergerak sendiri). Matikan (false) saat uji di HP asli atau rilis.
+const bool _useDummyLocation = true;
 
 /// Titik pergantian dummy ke API.
 ///
@@ -70,9 +75,11 @@ void registerRepositories(GetIt locator) {
 
   locator.registerLazySingleton<HomeRepository>(() => DummyHomeRepository());
 
-  // Lokasi memakai GPS perangkat. Untuk emulator tanpa GPS, ganti ke
-  // DummyLocationRepository() (import data/dummy/dummy_location_repository.dart).
+  // Lokasi memakai GPS perangkat, atau simulasi lari kalau
+  // _useDummyLocation bernilai true.
   locator.registerLazySingleton<LocationRepository>(
-    () => GeolocatorLocationRepository(),
+    () => _useDummyLocation
+        ? DummyLocationRepository()
+        : GeolocatorLocationRepository(),
   );
 }

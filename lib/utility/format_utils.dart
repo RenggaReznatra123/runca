@@ -124,7 +124,8 @@ class AppFormat {
     final distance = NumberFormat('0.##', 'en_US').format(km);
     return '$distance KM';
   }
-    /// null -> '-'-"' (belum ada pace), 311 -> '5'11"'
+
+  /// null -> '-'-"' (belum ada pace), 311 -> '5'11"'
   static String paceOrPlaceholder(int? secondsPerKm) {
     return secondsPerKm == null ? "-'-\"" : pace(secondsPerKm);
   }
@@ -212,5 +213,19 @@ class AppFormat {
     final month = date.month.toString().padLeft(2, '0');
     final day = date.day.toString().padLeft(2, '0');
     return '$month/$day/${date.year}';
+  }
+
+  /// DateTime(2026, 10, 13, 6, 15) -> 'Tue, 13 Oct · 06:15 AM'
+  static String runDateTime(DateTime dateTime) {
+    return DateFormat('EEE, d MMM \u00B7 hh:mm a', 'en_US').format(dateTime);
+  }
+
+  /// Judul awal aktivitas dari waktu mulai.
+  /// Sebelum jam 12 -> 'Morning Run', selain itu -> 'Wednesday Run'.
+  static String defaultActivityTitle(DateTime dateTime, {String noun = 'Run'}) {
+    final prefix = dateTime.hour < 12
+        ? 'Morning'
+        : DateFormat('EEEE', 'en_US').format(dateTime);
+    return '$prefix $noun';
   }
 }

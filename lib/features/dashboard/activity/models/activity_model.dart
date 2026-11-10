@@ -8,6 +8,14 @@ enum ActivityType {
   final String label;
 }
 
+/// Satu titik rute (data mentah, tanpa akurasi).
+class RoutePoint {
+  const RoutePoint({required this.latitude, required this.longitude});
+
+  final double latitude;
+  final double longitude;
+}
+
 class ActivityModel {
   const ActivityModel({
     required this.id,
@@ -19,6 +27,7 @@ class ActivityModel {
     required this.avgPaceSecondsPerKm,
     required this.calories,
     this.mapImageUrl,
+    this.route = const [],
   });
 
   final String id;
@@ -38,7 +47,24 @@ class ActivityModel {
   /// Kalori dalam kkal.
   final int calories;
 
-  /// URL (atau path aset) gambar peta. Kalau null atau gagal dimuat,
-  /// ditampilkan kotak placeholder.
+  /// URL (atau path aset) gambar peta. Dipakai kalau [route] kosong.
   final String? mapImageUrl;
+
+  /// Titik rute untuk menggambar peta. Kosong kalau tidak ada GPS.
+  final List<RoutePoint> route;
+
+  ActivityModel copyWith({String? title}) {
+    return ActivityModel(
+      id: id,
+      type: type,
+      title: title ?? this.title,
+      startedAt: startedAt,
+      distanceKm: distanceKm,
+      durationSeconds: durationSeconds,
+      avgPaceSecondsPerKm: avgPaceSecondsPerKm,
+      calories: calories,
+      mapImageUrl: mapImageUrl,
+      route: route,
+    );
+  }
 }

@@ -9,17 +9,18 @@ import 'package:runca/features/dashboard/activity/models/activity_model.dart';
 import 'package:runca/features/dashboard/settings/widgets/settings_choice_sheet.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/utility/snackbar_extension.dart';
-import 'run_countdown_screen.dart';
+
 import 'cubit/run_cubit.dart';
 import 'cubit/run_state.dart';
 import 'models/location_fix.dart';
+import 'run_countdown_screen.dart';
 import 'run_location_messages.dart';
+import 'run_tracking_screen.dart';
 import 'widgets/run_challenge_button.dart';
+import 'widgets/run_floating_controls.dart';
 import 'widgets/run_goal_sheet.dart';
-import 'widgets/run_gps_chip.dart';
 import 'widgets/run_map_attribution.dart';
 import 'widgets/run_map_view.dart';
-import 'widgets/run_side_controls.dart';
 import 'widgets/run_stats_panel.dart';
 import 'widgets/run_top_bar.dart';
 
@@ -66,36 +67,6 @@ class _RunViewState extends State<_RunView> {
     if (fix != null) _moveTo(fix, zoom: MapConfig.followZoom);
   }
 
-  Future<void> _startRun(RunState state) async {
-    // Lari hanya bisa dimulai kalau izin dan layanan lokasi sudah siap.
-    if (state.locationStatus == RunLocationStatus.checking) {
-      context.showInfoSnackbar(
-        'Checking your location...',
-        duration: const Duration(seconds: 2),
-      );
-      return;
-    }
-
-    if (state.locationStatus != RunLocationStatus.ready) {
-      context.showRunLocationMessage(state.locationStatus);
-      return;
-    }
-
-    final started = await Navigator.of(context).push<bool>(
-      MaterialPageRoute<bool>(
-        builder: (_) => RunCountdownScreen(
-          activityType: state.activityType,
-          position: state.position,
-        ),
-      ),
-    );
-
-    if (started != true || !mounted) return;
-
-    // Layar Tracking belum dibuat.
-    _showUnavailable('Tracking');
-  }
-
   Future<void> _selectType(RunState state) async {
     final cubit = context.read<RunCubit>();
 
@@ -129,6 +100,51 @@ class _RunViewState extends State<_RunView> {
     cubit.saveGoal(submission);
   }
 
+  void _startRun(RunState state) {
+    // Lari hanya bisa dimulai kalau izin dan layanan lokasi sudah siap.
+    if (state.locationStatus == RunLocationStatus.checking) {
+      context.showInfoSnackbar(
+        'Checking your location...',
+        duration: const Duration(seconds: 2),
+      );
+      return;
+    }
+
+    if (state.locationStatus != RunLocationStatus.ready) {
+      context.showRunLocationMessage(state.locationStatus);
+      return;
+    }
+
+    final cubit = context.read<RunCubit>();
+    final navigator = Navigator.of(context);
+    final setupRoute = ModalRoute.of(context);
+
+    navigator.push(
+      MaterialPageRoute<void>(
+        builder: (_) => RunCountdownScreen(
+          activityType: state.activityType,
+          position: state.position,
+          onFinished: () {
+            final latest = cubit.state;
+
+            // Ganti countdown dengan Tracking, lalu buang layar Setup di
+            // bawahnya supaya tidak ada kilatan layar Setup.
+            navigator.pushReplacement(
+              MaterialPageRoute<void>(
+                builder: (_) => RunTrackingScreen(
+                  activityType: latest.activityType,
+                  goal: latest.goal,
+                  initialPosition: latest.position,
+                ),
+              ),
+            );
+            if (setupRoute != null) navigator.removeRoute(setupRoute);
+          },
+        ),
+      ),
+    );
+  }
+
   void _onLocateTap(RunState state) {
     final fix = state.position;
 
@@ -152,13 +168,21 @@ class _RunViewState extends State<_RunView> {
     context.showUnavailableSnackbar(page, duration: const Duration(seconds: 2));
   }
 
+  /// Peta belum digambar selama izin dicek atau sinyal GPS belum datang,
+  /// supaya tidak sempat tampil di lokasi bawaan lalu melompat.
+  bool _waitingForPosition(RunState state) {
+    return state.position == null &&
+        (state.locationStatus == RunLocationStatus.checking ||
+            state.locationStatus == RunLocationStatus.ready);
+  }
+
   @override
   Widget build(BuildContext context) {
     final topInset = MediaQuery.paddingOf(context).top;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
     final panelHeight = RunStatsPanel.contentHeight + bottomInset;
     final barTop = topInset + 20;
-    final chipTop = barTop + RunTopBar.height + 20;
+    final badgeTop = barTop + RunTopBar.height + 20;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
@@ -191,11 +215,13 @@ class _RunViewState extends State<_RunView> {
                   // melengkung panel tetap berlatar peta.
                   Positioned.fill(
                     bottom: panelHeight - 24,
-                    child: RunMapView(
-                      controller: _mapController,
-                      position: state.position,
-                      onMapReady: _handleMapReady,
-                    ),
+                    child: _waitingForPosition(state)
+                        ? const _MapLoading()
+                        : RunMapView(
+                            controller: _mapController,
+                            position: state.position,
+                            onMapReady: _handleMapReady,
+                          ),
                   ),
                   Positioned(
                     top: barTop,
@@ -209,31 +235,28 @@ class _RunViewState extends State<_RunView> {
                     ),
                   ),
                   Positioned(
-                    top: chipTop,
-                    left: 20,
-                    child: RunGpsChip(
-                      accuracyMeters: state.position?.accuracyMeters,
-                    ),
-                  ),
-                  Positioned(
-                    top: chipTop + 36 + 20,
+                    top: badgeTop,
                     left: 20,
                     child: RunChallengeButton(
                       onTap: () => _showUnavailable('Challenge'),
                     ),
                   ),
                   Positioned(
-                    top: chipTop,
-                    right: 20,
-                    child: RunSideControls(
+                    left: 0,
+                    right: 0,
+                    bottom: panelHeight,
+                    height: RunFloatingControls.height,
+                    child: RunFloatingControls(
+                      accuracyMeters: state.position?.accuracyMeters,
                       onLayersTap: () => _showUnavailable('Map layers'),
                       onLocateTap: () => _onLocateTap(state),
                     ),
                   ),
                   Positioned(
-                    right: 10,
-                    bottom: panelHeight + 6,
-                    child: const RunMapAttribution(),
+                    left: 0,
+                    right: 0,
+                    bottom: panelHeight + 4,
+                    child: const Center(child: RunMapAttribution()),
                   ),
                   Positioned(
                     left: 0,
@@ -254,6 +277,20 @@ class _RunViewState extends State<_RunView> {
             },
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _MapLoading extends StatelessWidget {
+  const _MapLoading();
+
+  @override
+  Widget build(BuildContext context) {
+    return const ColoredBox(
+      color: AppPalette.bgSurfaceNeutral,
+      child: Center(
+        child: CircularProgressIndicator(color: AppPalette.bgFillPrimary),
       ),
     );
   }

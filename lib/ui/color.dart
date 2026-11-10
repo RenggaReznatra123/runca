@@ -158,4 +158,7 @@ class AppPalette {
   static const Color achievementGold = Color(0xFFF5B82E);
   // Isi kolom nonaktif di Edit Profile (perkiraan dari Figma, hex belum dicek).
   static const Color profileDisabledFill = Color(0xFFDCE3EC);
+
+  // Tombol Hold to Finish di layar Tracking (perkiraan dari Figma, hex belum dicek).
+  static const Color runFinish = Color(0xFFFF6B00);
 }

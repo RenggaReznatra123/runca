@@ -1,3 +1,4 @@
+import 'package:runca/features/dashboard/activity/models/activity_draft.dart';
 import 'package:runca/features/dashboard/activity/models/activity_model.dart';
 import 'package:runca/utility/resource/data_state.dart';
 
@@ -10,4 +11,17 @@ abstract class ActivityRepository {
     ActivityType? type,
     String? query,
   });
+
+  /// Menyimpan lari yang baru selesai. Mengembalikan aktivitas tersimpan.
+  Future<DataState<ActivityModel>> saveActivity(ActivityDraft draft);
+
+  /// Mengganti judul aktivitas.
+  Future<DataState<ActivityModel>> renameActivity({
+    required String id,
+    required String title,
+  });
+
+  /// Memberi sinyal setiap kali daftar aktivitas berubah (simpan, ubah nama),
+  /// supaya Home dan tab Activity memuat ulang.
+  Stream<void> get changes;
 }
