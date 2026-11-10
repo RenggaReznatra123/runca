@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/shared_view/empty_view.dart';
 import 'package:runca/features/dashboard/run/run_screen.dart';
+import '../activity_detail_screen.dart';
 import '../cubit/activity_cubit.dart';
 import '../cubit/activity_state.dart';
 import 'activity_error_banner.dart';
@@ -119,7 +120,18 @@ class ActivityListTab extends StatelessWidget {
           itemBuilder: (context, index) {
             final activity = activities[index];
 
-            return ActivityItem(key: ValueKey(activity.id), activity: activity);
+            return ActivityItem(
+              key: ValueKey(activity.id),
+              activity: activity,
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) =>
+                        ActivityDetailScreen(activityId: activity.id),
+                  ),
+                );
+              },
+            );
           },
         ),
       ),

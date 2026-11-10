@@ -1,15 +1,16 @@
 import 'dart:async';
 import 'dart:math' as math;
 
+import 'package:geolocator/geolocator.dart';
+
 import 'package:runca/config/map_config.dart';
 import 'package:runca/features/dashboard/run/models/location_fix.dart';
 import 'package:runca/repository/location_repository.dart';
 
-/// Lokasi simulasi untuk emulator tanpa GPS: titik bergerak sendiri
-/// mengitari rute kecil di sekitar Simpang Lima.
-///
-/// Posisi dipakai bersama oleh semua pendengar, jadi layar Setup dan
-/// layar Tracking melihat titik yang berkelanjutan (tidak melompat).
+/// Lokasi simulasi untuk uji tanpa keluar rumah. Izin lokasi tetap diminta
+/// sungguhan dan posisi awal diambil dari lokasi pengguna; setelah itu
+/// titik bergerak sendiri mengitari rute kecil dari posisi tersebut.
+/// Kalau posisi tidak didapat, titik awal jatuh ke lokasi bawaan peta.
 class DummyLocationRepository implements LocationRepository {
   DummyLocationRepository() {
     _controller = StreamController<LocationFix>.broadcast(
@@ -28,6 +29,9 @@ class DummyLocationRepository implements LocationRepository {
   // Akurasi tiruan (harus di bawah 30 m supaya dihitung).
   static const double _accuracyMeters = 8;
 
+  // Batas waktu menunggu posisi asli sebelum memakai lokasi bawaan.
+  static const Duration _originTimeout = Duration(seconds: 5);
+
   // Rute dalam meter dari titik awal: (timur, utara). Berbentuk loop tertutup.
   static const List<(double, double)> _waypoints = [
     (0, 0),
@@ -40,6 +44,10 @@ class DummyLocationRepository implements LocationRepository {
 
   late final StreamController<LocationFix> _controller;
   Timer? _timer;
+
+  double _originLatitude = MapConfig.defaultLatitude;
+  double _originLongitude = MapConfig.defaultLongitude;
+  Future<void>? _originFuture;
 
   // Jarak yang sudah ditempuh sepanjang rute (meter).
   double _travelled = 0;
@@ -55,6 +63,22 @@ class DummyLocationRepository implements LocationRepository {
     final dx = b.$1 - a.$1;
     final dy = b.$2 - a.$2;
     return math.sqrt(dx * dx + dy * dy);
+  }
+
+  /// Mengambil posisi asli sekali. Gagal atau lama berarti tetap lokasi bawaan.
+  Future<void> _resolveOrigin() async {
+    try {
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+          timeLimit: _originTimeout,
+        ),
+      );
+      _originLatitude = position.latitude;
+      _originLongitude = position.longitude;
+    } catch (_) {
+      // Tetap memakai lokasi bawaan.
+    }
   }
 
   void _startTimer() {
@@ -94,35 +118,53 @@ class DummyLocationRepository implements LocationRepository {
 
     const metersPerDegreeLat = 111320.0;
     final metersPerDegreeLon =
-        metersPerDegreeLat *
-        math.cos(MapConfig.defaultLatitude * math.pi / 180);
+        metersPerDegreeLat * math.cos(_originLatitude * math.pi / 180);
 
     return LocationFix(
-      latitude: MapConfig.defaultLatitude + north / metersPerDegreeLat,
-      longitude: MapConfig.defaultLongitude + east / metersPerDegreeLon,
+      latitude: _originLatitude + north / metersPerDegreeLat,
+      longitude: _originLongitude + east / metersPerDegreeLon,
       accuracyMeters: _accuracyMeters,
     );
   }
 
+  /// Izin sungguhan. Layanan lokasi mati diabaikan supaya emulator tetap jalan.
+  LocationPermissionResult _mapPermission(LocationPermission permission) {
+    switch (permission) {
+      case LocationPermission.denied:
+        return LocationPermissionResult.denied;
+      case LocationPermission.deniedForever:
+        return LocationPermissionResult.deniedForever;
+      case LocationPermission.whileInUse:
+      case LocationPermission.always:
+      case LocationPermission.unableToDetermine:
+        return LocationPermissionResult.granted;
+    }
+  }
+
   @override
   Future<LocationPermissionResult> checkPermission() async {
-    return LocationPermissionResult.granted;
+    return _mapPermission(await Geolocator.checkPermission());
   }
 
   @override
   Future<LocationPermissionResult> requestPermission() async {
-    return LocationPermissionResult.granted;
+    return _mapPermission(await Geolocator.requestPermission());
   }
 
   @override
   Stream<LocationFix> watchLocation() async* {
+    await (_originFuture ??= _resolveOrigin());
     yield _currentFix();
     yield* _controller.stream;
   }
 
   @override
-  Future<void> openAppSettings() async {}
+  Future<void> openAppSettings() async {
+    await Geolocator.openAppSettings();
+  }
 
   @override
-  Future<void> openLocationSettings() async {}
+  Future<void> openLocationSettings() async {
+    await Geolocator.openLocationSettings();
+  }
 }

@@ -228,4 +228,9 @@ class AppFormat {
         : DateFormat('EEEE', 'en_US').format(dateTime);
     return '$prefix $noun';
   }
+
+  /// DateTime(2026, 8, 12, 6, 42) -> 'Wed, Aug 12 · 06:42 AM'
+  static String activityDetailDateTime(DateTime dateTime) {
+    return DateFormat('EEE, MMM d \u00B7 hh:mm a', 'en_US').format(dateTime);
+  }
 }

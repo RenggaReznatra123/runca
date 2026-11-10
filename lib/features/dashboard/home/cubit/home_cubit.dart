@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:runca/config/service_locator.dart';
 import 'package:runca/features/dashboard/home/models/home_model.dart';
@@ -9,18 +11,20 @@ import 'package:runca/utility/resource/data_state.dart';
 import 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
-  HomeCubit({
-    HomeRepository? repository,
-    ProfileRepository? profileRepository,
-  }) : _repository = repository ?? serviceLocator.get<HomeRepository>(),
-       _profileRepository =
-           profileRepository ?? serviceLocator.get<ProfileRepository>(),
-       super(const HomeState()) {
+  HomeCubit({HomeRepository? repository, ProfileRepository? profileRepository})
+    : _repository = repository ?? serviceLocator.get<HomeRepository>(),
+      _profileRepository =
+          profileRepository ?? serviceLocator.get<ProfileRepository>(),
+      super(const HomeState()) {
     loadHome();
+
+    // Muat ulang diam-diam kalau ada lari baru (streak dan statistik).
+    _changesSubscription = _repository.changes.listen((_) => loadHome());
   }
 
   final HomeRepository _repository;
   final ProfileRepository _profileRepository;
+  StreamSubscription<void>? _changesSubscription;
   int _requestId = 0;
 
   Future<void> loadHome() async {
@@ -78,5 +82,11 @@ class HomeCubit extends Cubit<HomeState> {
 
   void clearError() {
     if (state.hasError) emit(state.copyWith(hasError: false));
+  }
+
+  @override
+  Future<void> close() {
+    _changesSubscription?.cancel();
+    return super.close();
   }
 }
