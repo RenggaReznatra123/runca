@@ -47,7 +47,7 @@ void registerRepositories(GetIt locator) {
   );
 
   locator.registerLazySingleton<ProgressRepository>(
-    () => DummyProgressRepository(),
+    () => DummyProgressRepository(locator.get<ActivityRepository>()),
   );
 
   locator.registerLazySingleton<ProfileRepository>(
@@ -73,8 +73,9 @@ void registerRepositories(GetIt locator) {
     () => DummyLeaderboardRepository(),
   );
 
-  locator.registerLazySingleton<HomeRepository>(() => DummyHomeRepository());
-
+  locator.registerLazySingleton<HomeRepository>(
+    () => DummyHomeRepository(locator.get<ActivityRepository>()),
+  );
   // Lokasi memakai GPS perangkat, atau simulasi lari kalau
   // _useDummyLocation bernilai true.
   locator.registerLazySingleton<LocationRepository>(

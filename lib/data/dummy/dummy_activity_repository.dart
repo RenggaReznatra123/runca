@@ -52,6 +52,21 @@ class DummyActivityRepository implements ActivityRepository {
   }
 
   @override
+  Future<DataState<ActivityModel>> getActivityDetail({
+    required String id,
+  }) async {
+    await DummyConfig.simulateNetwork();
+
+    final index = _activities.indexWhere((activity) => activity.id == id);
+
+    if (DummyConfig.scenario == DummyScenario.failure || index == -1) {
+      return DummyConfig.failure<ActivityModel>('/activities/$id');
+    }
+
+    return DataStateSuccess<ActivityModel>(_activities[index]);
+  }
+
+  @override
   Future<DataState<ActivityModel>> saveActivity(ActivityDraft draft) async {
     await DummyConfig.simulateNetwork();
 

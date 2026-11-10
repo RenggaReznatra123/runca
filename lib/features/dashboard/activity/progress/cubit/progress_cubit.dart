@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:runca/config/service_locator.dart';
@@ -13,9 +15,13 @@ class ProgressCubit extends Cubit<ProgressState> {
     : _repository = repository ?? serviceLocator.get<ProgressRepository>(),
       super(ProgressState(selectedDate: _today())) {
     loadProgress();
+
+    // Muat ulang diam-diam kalau ada lari baru.
+    _changesSubscription = _repository.changes.listen((_) => _reloadSilently());
   }
 
   final ProgressRepository _repository;
+  StreamSubscription<void>? _changesSubscription;
 
   // Dipakai untuk mengabaikan jawaban lama kalau ada permintaan yang lebih baru.
   int _requestId = 0;
@@ -52,6 +58,33 @@ class ProgressCubit extends Cubit<ProgressState> {
       );
     } else {
       emit(state.copyWith(status: ProgressStatus.failure));
+    }
+  }
+
+  /// Ambil ulang statistik dan rekor tanpa loading. Kalau gagal, tampilan
+  /// lama dibiarkan.
+  Future<void> _reloadSilently() async {
+    final requestId = ++_requestId;
+    final period = state.selectedPeriod;
+    final date = state.selectedDate;
+    final type = state.selectedFilter.type;
+
+    final (statsResult, recordsResult) = await (
+      _repository.getStats(period: period, date: date, type: type),
+      _repository.getPersonalRecords(),
+    ).wait;
+
+    if (isClosed || requestId != _requestId) return;
+
+    if (statsResult is DataStateSuccess<ProgressStats> &&
+        recordsResult is DataStateSuccess<PersonalRecords>) {
+      emit(
+        state.copyWith(
+          status: ProgressStatus.success,
+          stats: statsResult.data,
+          records: recordsResult.data,
+        ),
+      );
     }
   }
 
@@ -105,5 +138,11 @@ class ProgressCubit extends Cubit<ProgressState> {
     } else {
       emit(state.copyWith(status: ProgressStatus.failure));
     }
+  }
+
+  @override
+  Future<void> close() {
+    _changesSubscription?.cancel();
+    return super.close();
   }
 }

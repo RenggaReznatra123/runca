@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:runca/features/dashboard/activity/activity_detail_screen.dart';
 import 'package:runca/features/dashboard/activity/models/activity_draft.dart';
 import 'package:runca/features/dashboard/activity/widgets/activity_state_view.dart';
 import 'package:runca/ui/color.dart';
@@ -91,10 +92,14 @@ class _RunSummaryView extends StatelessWidget {
                 ),
                 RunSummaryActions(
                   onBackToHome: () => Navigator.of(context).pop(),
-                  onViewDetails: () => context.showUnavailableSnackbar(
-                    'Activity Details',
-                    duration: const Duration(seconds: 2),
-                  ),
+                  onViewDetails: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute<void>(
+                        builder: (_) =>
+                            ActivityDetailScreen(activityId: activity.id),
+                      ),
+                    );
+                  },
                 ),
               ],
             );

@@ -5,8 +5,6 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'package:runca/config/map_config.dart';
-import 'package:runca/features/dashboard/activity/models/activity_model.dart';
-import 'package:runca/features/dashboard/settings/widgets/settings_choice_sheet.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/utility/snackbar_extension.dart';
 
@@ -16,6 +14,7 @@ import 'models/location_fix.dart';
 import 'run_countdown_screen.dart';
 import 'run_location_messages.dart';
 import 'run_tracking_screen.dart';
+import 'widgets/run_activity_type_sheet.dart';
 import 'widgets/run_challenge_button.dart';
 import 'widgets/run_floating_controls.dart';
 import 'widgets/run_goal_sheet.dart';
@@ -70,19 +69,15 @@ class _RunViewState extends State<_RunView> {
   Future<void> _selectType(RunState state) async {
     final cubit = context.read<RunCubit>();
 
-    final result = await SettingsChoiceSheet.show(
-      context: context,
-      title: 'Select Activity',
-      description: 'Choose the type of activity you want to record.',
-      options: ActivityType.values.map((type) => type.label).toList(),
-      selected: state.activityType.label,
+    final result = await RunActivityTypeSheet.show(
+      context,
+      selected: state.activityType,
+      onUnavailable: _showUnavailable,
     );
 
     if (result == null || cubit.isClosed) return;
 
-    cubit.selectActivityType(
-      ActivityType.values.firstWhere((type) => type.label == result),
-    );
+    cubit.selectActivityType(result);
   }
 
   Future<void> _openGoalSheet(RunState state) async {

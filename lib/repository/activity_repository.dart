@@ -12,6 +12,9 @@ abstract class ActivityRepository {
     String? query,
   });
 
+  /// Satu aktivitas berdasarkan id, untuk halaman detail.
+  Future<DataState<ActivityModel>> getActivityDetail({required String id});
+
   /// Menyimpan lari yang baru selesai. Mengembalikan aktivitas tersimpan.
   Future<DataState<ActivityModel>> saveActivity(ActivityDraft draft);
 

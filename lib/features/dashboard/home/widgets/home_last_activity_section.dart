@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:runca/features/dashboard/activity/activity_detail_screen.dart';
 import 'package:runca/features/dashboard/activity/cubit/activity_cubit.dart';
 import 'package:runca/features/dashboard/activity/cubit/activity_state.dart';
 import 'package:runca/features/dashboard/activity/models/activity_model.dart';
@@ -44,7 +45,18 @@ class HomeLastActivitySection extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 8, 20, 20),
-              child: LastActivityCard(activity: latest),
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) =>
+                          ActivityDetailScreen(activityId: latest.id),
+                    ),
+                  );
+                },
+                child: LastActivityCard(activity: latest),
+              ),
             ),
           ],
         );

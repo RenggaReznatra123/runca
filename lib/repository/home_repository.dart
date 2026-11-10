@@ -7,4 +7,8 @@ abstract class HomeRepository {
   Future<DataState<WeeklyStatsData>> getWeeklyStats({
     required HomeActivityType activityType,
   });
+
+  /// Memberi sinyal kalau data lari berubah (ada lari baru), supaya Home
+  /// memuat ulang streak dan statistik mingguan.
+  Stream<void> get changes;
 }

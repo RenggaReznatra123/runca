@@ -12,4 +12,8 @@ abstract class ProgressRepository {
   });
 
   Future<DataState<PersonalRecords>> getPersonalRecords();
+
+  /// Memberi sinyal kalau data lari berubah (ada lari baru), supaya tab
+  /// Progress memuat ulang.
+  Stream<void> get changes;
 }
