@@ -14,6 +14,11 @@ class ActivityCubit extends Cubit<ActivityState> {
     : _repository = repository ?? serviceLocator.get<ActivityRepository>(),
       super(const ActivityState()) {
     loadActivities();
+
+    // Muat ulang diam-diam kalau ada aktivitas baru atau berubah.
+    _changesSubscription = _repository.changes.listen(
+      (_) => _fetch(showLoading: false),
+    );
   }
 
   static const Duration _searchDelay = Duration(milliseconds: 300);
@@ -21,6 +26,7 @@ class ActivityCubit extends Cubit<ActivityState> {
   final ActivityRepository _repository;
 
   Timer? _searchDebounce;
+  StreamSubscription<void>? _changesSubscription;
 
   // Dipakai untuk mengabaikan jawaban lama kalau ada permintaan yang lebih baru.
   int _requestId = 0;
@@ -82,6 +88,7 @@ class ActivityCubit extends Cubit<ActivityState> {
   @override
   Future<void> close() {
     _searchDebounce?.cancel();
+    _changesSubscription?.cancel();
     return super.close();
   }
 }

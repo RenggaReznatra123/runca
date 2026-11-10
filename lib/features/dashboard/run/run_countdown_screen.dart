@@ -14,31 +14,42 @@ import 'widgets/run_countdown_circle.dart';
 import 'widgets/run_countdown_map.dart';
 import 'widgets/run_map_attribution.dart';
 
-/// Layar hitung mundur 3-2-1 sebelum lari dimulai. Menutup dengan hasil
-/// `true` kalau hitung mundur selesai, atau null kalau dibatalkan.
+/// Layar hitung mundur 3-2-1 sebelum lari dimulai. Kalau hitung mundur
+/// selesai, [onFinished] dipanggil (pemanggil yang menentukan layar
+/// berikutnya). Kalau dibatalkan (back), [onFinished] tidak dipanggil.
 class RunCountdownScreen extends StatelessWidget {
   const RunCountdownScreen({
     super.key,
     required this.activityType,
     required this.position,
+    required this.onFinished,
   });
 
   final ActivityType activityType;
 
   /// Lokasi terakhir, untuk pusat peta latar. Null memakai pusat bawaan.
   final LocationFix? position;
+  final VoidCallback onFinished;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => RunCountdownCubit(),
-      child: _RunCountdownView(activityType: activityType, position: position),
+      child: _RunCountdownView(
+        activityType: activityType,
+        position: position,
+        onFinished: onFinished,
+      ),
     );
   }
 }
 
 class _RunCountdownView extends StatelessWidget {
-  const _RunCountdownView({required this.activityType, required this.position});
+  const _RunCountdownView({
+    required this.activityType,
+    required this.position,
+    required this.onFinished,
+  });
 
   // Posisi relatif dari Figma (frame tinggi 917): pusat lingkaran di y 383,
   // titik lokasi 57 di bawah pusat lingkaran.
@@ -49,6 +60,7 @@ class _RunCountdownView extends StatelessWidget {
 
   final ActivityType activityType;
   final LocationFix? position;
+  final VoidCallback onFinished;
 
   @override
   Widget build(BuildContext context) {
@@ -62,7 +74,7 @@ class _RunCountdownView extends StatelessWidget {
       child: BlocListener<RunCountdownCubit, RunCountdownState>(
         listenWhen: (previous, current) =>
             !previous.finished && current.finished,
-        listener: (context, state) => Navigator.of(context).pop(true),
+        listener: (context, state) => onFinished(),
         child: Scaffold(
           backgroundColor: AppPalette.baseWhite,
           body: LayoutBuilder(

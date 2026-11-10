@@ -1,11 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:runca/ui/color.dart';
-import 'package:runca/ui/shared_view/app_image.dart';
+
+import '../models/activity_model.dart';
+import 'route_map_preview.dart';
 
 class ActivityMapThumbnail extends StatelessWidget {
-  const ActivityMapThumbnail({this.imagePath, super.key});
+  const ActivityMapThumbnail({
+    this.imagePath,
+    this.route = const [],
+    super.key,
+  });
 
   final String? imagePath;
+  final List<RoutePoint> route;
 
   static const double _width = 168;
   static const double _height = 116;
@@ -14,25 +20,11 @@ class ActivityMapThumbnail extends StatelessWidget {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
-      child: AppImage(
-        path: imagePath,
+      child: RouteMapPreview(
+        route: route,
+        imagePath: imagePath,
         width: _width,
         height: _height,
-        placeholder: _placeholder(),
-      ),
-    );
-  }
-
-  Widget _placeholder() {
-    return Container(
-      width: _width,
-      height: _height,
-      color: AppPalette.bgSurfaceNeutral,
-      alignment: Alignment.center,
-      child: const Icon(
-        Icons.map_outlined,
-        size: 32,
-        color: AppPalette.textNeutralSecondary,
       ),
     );
   }

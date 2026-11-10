@@ -34,7 +34,10 @@ class ActivityItem extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ActivityMapThumbnail(imagePath: activity.mapImageUrl),
+                            ActivityMapThumbnail(
+                imagePath: activity.mapImageUrl,
+                route: activity.route,
+              ),
               const SizedBox(width: 20),
               Expanded(
                 child: Padding(
