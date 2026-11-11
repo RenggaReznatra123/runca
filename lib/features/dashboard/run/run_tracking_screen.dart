@@ -24,7 +24,7 @@ import 'widgets/run_top_bar.dart';
 import 'widgets/run_tracking_panel.dart';
 
 /// Layar Tracking: peta dengan rute, statistik langsung, dan tombol
-/// Pause, Resume, serta Hold to Finish.
+/// Pause, Resume, Lock, serta Hold to Finish.
 class RunTrackingScreen extends StatelessWidget {
   const RunTrackingScreen({
     super.key,
@@ -109,6 +109,14 @@ class _RunTrackingViewState extends State<_RunTrackingView> {
     context.showUnavailableSnackbar(page, duration: const Duration(seconds: 2));
   }
 
+  // ASUMSI: teks petunjuk (belum ada desain layar terkunci di Figma).
+  void _showLockedHint() {
+    context.showInfoSnackbar(
+            'Hold the button below to unlock.',
+      duration: const Duration(seconds: 2),
+    );
+  }
+
   /// Finish ditekan: kalau belum ada data, tampilkan dialog dan lari tetap
   /// dijeda. Kalau ada data, akhiri lari (lanjut ke layar ringkasan).
   Future<void> _handleFinish() async {
@@ -122,6 +130,21 @@ class _RunTrackingViewState extends State<_RunTrackingView> {
     }
 
     cubit.finish();
+  }
+
+  void _openSummary() {
+    final trackingCubit = context.read<RunTrackingCubit>();
+    final noun = widget.activityType == ActivityType.cycling ? 'Ride' : 'Run';
+    final draft = trackingCubit.buildDraft(
+      title: AppFormat.defaultActivityTitle(
+        trackingCubit.startedAt,
+        noun: noun,
+      ),
+    );
+
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute<void>(builder: (_) => RunSummaryScreen(draft: draft)),
+    );
   }
 
   @override
@@ -159,24 +182,7 @@ class _RunTrackingViewState extends State<_RunTrackingView> {
               listenWhen: (previous, current) =>
                   previous.status != RunTrackingStatus.finished &&
                   current.status == RunTrackingStatus.finished,
-              listener: (context, state) {
-                final trackingCubit = context.read<RunTrackingCubit>();
-                final noun = widget.activityType == ActivityType.cycling
-                    ? 'Ride'
-                    : 'Run';
-                final draft = trackingCubit.buildDraft(
-                  title: AppFormat.defaultActivityTitle(
-                    trackingCubit.startedAt,
-                    noun: noun,
-                  ),
-                );
-
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute<void>(
-                    builder: (_) => RunSummaryScreen(draft: draft),
-                  ),
-                );
-              },
+              listener: (context, state) => _openSummary(),
             ),
           ],
           child: Scaffold(
@@ -232,6 +238,20 @@ class _RunTrackingViewState extends State<_RunTrackingView> {
                   bottom: panelHeight + 4,
                   child: const Center(child: RunMapAttribution()),
                 ),
+                // Saat terkunci, semua sentuhan di atas panel ditahan.
+                Positioned.fill(
+                  bottom: panelHeight,
+                  child: BlocBuilder<RunTrackingCubit, RunTrackingState>(
+                    buildWhen: (previous, current) =>
+                        previous.isLocked != current.isLocked,
+                    builder: (context, state) => state.isLocked
+                        ? GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: _showLockedHint,
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ),
                 Positioned(
                   left: 0,
                   right: 0,
@@ -243,10 +263,13 @@ class _RunTrackingViewState extends State<_RunTrackingView> {
                       paceSecondsPerKm: state.paceSecondsPerKm,
                       calories: state.calories,
                       goal: widget.goal,
+                      splits: state.splits,
                       isPaused: state.status == RunTrackingStatus.paused,
+                      isLocked: state.isLocked,
                       onPause: cubit.pause,
                       onResume: cubit.resume,
-                      onLock: () => _showUnavailable('Lock screen'),
+                      onLock: cubit.lock,
+                      onUnlock: cubit.unlock,
                       onFinish: _handleFinish,
                     ),
                   ),

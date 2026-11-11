@@ -54,6 +54,8 @@ class _RunCountdownView extends StatelessWidget {
   // Posisi relatif dari Figma (frame tinggi 917): pusat lingkaran di y 383,
   // titik lokasi 57 di bawah pusat lingkaran.
   static const double _circleCenterFraction = 383 / 917;
+  // Treadmill: tanpa peta, lingkaran di y 411.
+  static const double _treadmillCircleCenterFraction = 411 / 917;
   static const double _dotBelowCenter = 57;
   static const double _mapHeight = 560;
   static const double _titleGap = 46;
@@ -66,6 +68,7 @@ class _RunCountdownView extends StatelessWidget {
   Widget build(BuildContext context) {
     final topInset = MediaQuery.paddingOf(context).top;
     final bottomInset = MediaQuery.paddingOf(context).bottom;
+    final isTreadmill = activityType == ActivityType.treadmill;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
@@ -80,25 +83,30 @@ class _RunCountdownView extends StatelessWidget {
           body: LayoutBuilder(
             builder: (context, constraints) {
               final circleCenterY =
-                  constraints.maxHeight * _circleCenterFraction;
+                  constraints.maxHeight *
+                  (isTreadmill
+                      ? _treadmillCircleCenterFraction
+                      : _circleCenterFraction);
               final circleTop = circleCenterY - RunCountdownCircle.size / 2;
               final mapCenterY = circleCenterY + _dotBelowCenter;
 
               return Stack(
                 children: [
-                  Positioned(
-                    top: mapCenterY - _mapHeight / 2,
-                    left: 0,
-                    right: 0,
-                    height: _mapHeight,
-                    child: RunCountdownMap(position: position),
-                  ),
-                  Positioned(
-                    top: topInset + 36,
-                    left: 0,
-                    right: 0,
-                    child: _ActivityLabel(type: activityType),
-                  ),
+                  if (!isTreadmill) ...[
+                    Positioned(
+                      top: mapCenterY - _mapHeight / 2,
+                      left: 0,
+                      right: 0,
+                      height: _mapHeight,
+                      child: RunCountdownMap(position: position),
+                    ),
+                    Positioned(
+                      top: topInset + 36,
+                      left: 0,
+                      right: 0,
+                      child: _ActivityLabel(type: activityType),
+                    ),
+                  ],
                   Positioned(
                     top: circleTop,
                     left: 0,
@@ -122,11 +130,12 @@ class _RunCountdownView extends StatelessWidget {
                     right: 20,
                     child: const _GetReadyText(),
                   ),
-                  Positioned(
-                    right: 10,
-                    bottom: bottomInset + 8,
-                    child: const RunMapAttribution(),
-                  ),
+                  if (!isTreadmill)
+                    Positioned(
+                      right: 10,
+                      bottom: bottomInset + 8,
+                      child: const RunMapAttribution(),
+                    ),
                 ],
               );
             },

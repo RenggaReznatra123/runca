@@ -233,4 +233,17 @@ class AppFormat {
   static String activityDetailDateTime(DateTime dateTime) {
     return DateFormat('EEE, MMM d \u00B7 hh:mm a', 'en_US').format(dateTime);
   }
+
+  /// Pace satu split, contoh 5:32.
+  static String splitPace(int seconds) {
+    final minutes = seconds ~/ 60;
+    final rest = (seconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$rest';
+  }
+
+  /// Selisih pace antar split, contoh -0:17 atau +0:25.
+  static String splitDelta(int seconds) {
+    final sign = seconds < 0 ? '-' : '+';
+    return '$sign${splitPace(seconds.abs())}';
+  }
 }

@@ -22,6 +22,8 @@ import 'widgets/run_map_attribution.dart';
 import 'widgets/run_map_view.dart';
 import 'widgets/run_stats_panel.dart';
 import 'widgets/run_top_bar.dart';
+import 'package:runca/features/dashboard/activity/models/activity_model.dart';
+import 'widgets/treadmill_setup_view.dart';
 
 /// Layar Setup lari: peta nyata, status GPS, target, dan tombol Start Run.
 class RunScreen extends StatelessWidget {
@@ -95,7 +97,30 @@ class _RunViewState extends State<_RunView> {
     cubit.saveGoal(submission);
   }
 
+  // SEMENTARA: layar Tracking Treadmill belum dibuat. Setelah hitung mundur,
+  // kembali ke Setup dan tampilkan SnackBar.
+  void _startTreadmill() {
+    final navigator = Navigator.of(context);
+
+    navigator.push(
+      MaterialPageRoute<void>(
+        builder: (_) => RunCountdownScreen(
+          activityType: ActivityType.treadmill,
+          position: null,
+          onFinished: () {
+            navigator.pop();
+            if (mounted) _showUnavailable('Treadmill tracking');
+          },
+        ),
+      ),
+    );
+  }
+
   void _startRun(RunState state) {
+    if (state.activityType == ActivityType.treadmill) {
+      _startTreadmill();
+      return;
+    }
     // Lari hanya bisa dimulai kalau izin dan layanan lokasi sudah siap.
     if (state.locationStatus == RunLocationStatus.checking) {
       context.showInfoSnackbar(
@@ -188,8 +213,11 @@ class _RunViewState extends State<_RunView> {
           BlocListener<RunCubit, RunState>(
             listenWhen: (previous, current) =>
                 previous.locationStatus != current.locationStatus,
-            listener: (context, state) =>
-                context.showRunLocationMessage(state.locationStatus),
+            listener: (context, state) {
+              // Treadmill tidak memakai GPS, jadi tanpa pesan lokasi.
+              if (state.activityType == ActivityType.treadmill) return;
+              context.showRunLocationMessage(state.locationStatus);
+            },
           ),
           BlocListener<RunCubit, RunState>(
             listenWhen: (previous, current) =>
@@ -204,6 +232,15 @@ class _RunViewState extends State<_RunView> {
           backgroundColor: AppPalette.bgSurfaceNeutral,
           body: BlocBuilder<RunCubit, RunState>(
             builder: (context, state) {
+              if (state.activityType == ActivityType.treadmill) {
+                return TreadmillSetupView(
+                  activityType: state.activityType,
+                  onBack: () => Navigator.of(context).maybePop(),
+                  onTypeTap: () => _selectType(state),
+                  onSettingsTap: () => _showUnavailable('Run settings'),
+                  onStart: () => _startRun(state),
+                );
+              }
               return Stack(
                 children: [
                   // Peta berhenti 24 di bawah puncak panel, supaya sudut

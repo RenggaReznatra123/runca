@@ -3,26 +3,39 @@ import 'package:flutter/material.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
 
-/// Chip status GPS. Hijau kalau teliti, oranye kalau lemah, abu kalau belum
-/// ada sinyal.
+/// Chip status GPS. Ikon dan warna mengikuti ketelitian: hijau 3 bar (bagus),
+/// oranye 2 bar (agak jelek), merah 1 bar (jelek), abu kalau belum ada sinyal.
 class RunGpsChip extends StatelessWidget {
   const RunGpsChip({super.key, required this.accuracyMeters});
 
   /// Ketelitian GPS dalam meter. Null berarti belum ada sinyal.
   final double? accuracyMeters;
 
-  // ASUMSI: batas teliti 20 meter (belum ada di Figma).
-  static const double _goodAccuracyMeters = 20;
+  // ASUMSI: batas ketelitian (belum ada di Figma). Di atas 30 m, pembacaan
+  // juga diabaikan untuk hitungan jarak (lihat RunTrackingCubit).
+  static const double _goodAccuracyMeters = 15;
+  static const double _fairAccuracyMeters = 30;
 
   @override
   Widget build(BuildContext context) {
-    final accuracy = accuracyMeters;
-
-    final color = accuracy == null
-        ? AppPalette.textNeutralSecondary
-        : accuracy <= _goodAccuracyMeters
-        ? AppPalette.textSuccess
-        : AppPalette.textWarning;
+    final (color, icon) = switch (accuracyMeters) {
+      null => (
+        AppPalette.textNeutralSecondary,
+        Icons.signal_cellular_alt_rounded,
+      ),
+      <= _goodAccuracyMeters => (
+        AppPalette.textSuccess,
+        Icons.signal_cellular_alt_rounded,
+      ),
+      <= _fairAccuracyMeters => (
+        AppPalette.textWarning,
+        Icons.signal_cellular_alt_2_bar_rounded,
+      ),
+      _ => (
+        AppPalette.textDanger,
+        Icons.signal_cellular_alt_1_bar_rounded,
+      ),
+    };
 
     return Container(
       height: 36,
@@ -40,7 +53,7 @@ class RunGpsChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.signal_cellular_alt_rounded, size: 16, color: color),
+          Icon(icon, size: 16, color: color),
           const SizedBox(width: 6),
           Text(
             'GPS',

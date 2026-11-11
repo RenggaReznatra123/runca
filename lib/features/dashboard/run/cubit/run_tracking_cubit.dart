@@ -108,6 +108,27 @@ class RunTrackingCubit extends Cubit<RunTrackingState> {
     );
   }
 
+  /// Mencatat detik saat tiap kilometer penuh terlewati. Waktunya
+  /// diinterpolasi di antara dua titik GPS supaya tidak melenceng.
+  List<int> _kmEndsFor({
+    required double fromKm,
+    required double toKm,
+    required int fromMs,
+    required int toMs,
+  }) {
+    var ends = state.kmEndSeconds;
+    var nextKm = ends.length + 1;
+
+    while (nextKm <= toKm) {
+      final fraction = ((nextKm - fromKm) / (toKm - fromKm)).clamp(0.0, 1.0);
+      final ms = fromMs + (toMs - fromMs) * fraction;
+      ends = [...ends, (ms / 1000).round()];
+      nextKm++;
+    }
+
+    return ends;
+  }
+
   void _onFix(LocationFix fix) {
     switch (state.status) {
       case RunTrackingStatus.finished:
@@ -150,7 +171,14 @@ class RunTrackingCubit extends Cubit<RunTrackingState> {
       return;
     }
 
-    final distanceKm = state.distanceKm + meters / 1000;
+    final previousKm = state.distanceKm;
+    final distanceKm = previousKm + meters / 1000;
+    final kmEndSeconds = _kmEndsFor(
+      fromKm: previousKm,
+      toKm: distanceKm,
+      fromMs: _lastCountedAtMs,
+      toMs: nowMs,
+    );
 
     _lastCounted = fix;
     _lastCountedAtMs = nowMs;
@@ -161,6 +189,7 @@ class RunTrackingCubit extends Cubit<RunTrackingState> {
         route: [...state.route, fix],
         distanceKm: distanceKm,
         calories: _caloriesFor(distanceKm),
+        kmEndSeconds: kmEndSeconds,
       ),
     );
   }
@@ -211,6 +240,19 @@ class RunTrackingCubit extends Cubit<RunTrackingState> {
     _lastCounted = null;
     _stopwatch.start();
     emit(state.copyWith(status: RunTrackingStatus.running));
+  }
+
+  /// Mengunci layar (hanya saat lari berjalan).
+  void lock() {
+    if (state.status != RunTrackingStatus.running) return;
+
+    emit(state.copyWith(isLocked: true));
+  }
+
+  void unlock() {
+    if (!state.isLocked) return;
+
+    emit(state.copyWith(isLocked: false));
   }
 
   void finish() {
