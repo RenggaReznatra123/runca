@@ -19,6 +19,7 @@ class RunExpandedPanel extends StatefulWidget {
     required this.paceSecondsPerKm,
     required this.calories,
     required this.splits,
+    required this.autoLapEnabled,
     required this.isPaused,
   });
 
@@ -32,6 +33,7 @@ class RunExpandedPanel extends StatefulWidget {
   final int? paceSecondsPerKm;
   final int calories;
   final List<RunSplit> splits;
+  final bool autoLapEnabled;
   final bool isPaused;
 
   @override
@@ -79,7 +81,10 @@ class _RunExpandedPanelState extends State<RunExpandedPanel> {
                 calories: widget.calories,
                 highlighted: widget.isPaused,
               ),
-              RunSplitsView(splits: widget.splits),
+              RunSplitsView(
+                splits: widget.splits,
+                autoLapEnabled: widget.autoLapEnabled,
+              ),
             ],
           ),
         ),

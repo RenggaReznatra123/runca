@@ -5,9 +5,14 @@ import 'package:runca/ui/typography.dart';
 import 'package:runca/utility/format_utils.dart';
 
 class RunSummaryHeader extends StatelessWidget {
-  const RunSummaryHeader({super.key, required this.startedAt});
+  const RunSummaryHeader({
+    super.key,
+    required this.startedAt,
+    this.title = 'Run Complete!',
+  });
 
   final DateTime startedAt;
+  final String title;
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +20,7 @@ class RunSummaryHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Run Complete!',
+          title,
           style: AppTypography.titleLarge(color: AppPalette.textSuccess),
         ),
         const SizedBox(height: 4),

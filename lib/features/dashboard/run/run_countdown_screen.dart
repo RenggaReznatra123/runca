@@ -14,7 +14,7 @@ import 'widgets/run_countdown_circle.dart';
 import 'widgets/run_countdown_map.dart';
 import 'widgets/run_map_attribution.dart';
 
-/// Layar hitung mundur 3-2-1 sebelum lari dimulai. Kalau hitung mundur
+/// Layar hitung mundur sebelum lari dimulai. Kalau hitung mundur
 /// selesai, [onFinished] dipanggil (pemanggil yang menentukan layar
 /// berikutnya). Kalau dibatalkan (back), [onFinished] tidak dipanggil.
 class RunCountdownScreen extends StatelessWidget {
@@ -23,6 +23,7 @@ class RunCountdownScreen extends StatelessWidget {
     required this.activityType,
     required this.position,
     required this.onFinished,
+    this.seconds = RunCountdownCubit.defaultSeconds,
   });
 
   final ActivityType activityType;
@@ -31,10 +32,13 @@ class RunCountdownScreen extends StatelessWidget {
   final LocationFix? position;
   final VoidCallback onFinished;
 
+  /// Lama hitung mundur dari Run Settings.
+  final int seconds;
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => RunCountdownCubit(),
+      create: (_) => RunCountdownCubit(seconds: seconds),
       child: _RunCountdownView(
         activityType: activityType,
         position: position,

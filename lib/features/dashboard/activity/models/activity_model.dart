@@ -28,6 +28,7 @@ class ActivityModel {
     required this.calories,
     this.mapImageUrl,
     this.route = const [],
+    this.steps,
   });
 
   final String id;
@@ -53,6 +54,9 @@ class ActivityModel {
   /// Titik rute untuk menggambar peta. Kosong kalau tidak ada GPS.
   final List<RoutePoint> route;
 
+  /// Jumlah langkah. Hanya ada untuk Treadmill, selain itu null.
+  final int? steps;
+
   ActivityModel copyWith({String? title}) {
     return ActivityModel(
       id: id,
@@ -65,6 +69,7 @@ class ActivityModel {
       calories: calories,
       mapImageUrl: mapImageUrl,
       route: route,
+      steps: steps,
     );
   }
 }

@@ -20,6 +20,7 @@ class RunTrackingPanel extends StatefulWidget {
     required this.calories,
     required this.goal,
     required this.splits,
+    required this.autoLapEnabled,
     required this.isPaused,
     required this.isLocked,
     required this.onPause,
@@ -35,6 +36,7 @@ class RunTrackingPanel extends StatefulWidget {
   final int calories;
   final RunGoal? goal;
   final List<RunSplit> splits;
+  final bool autoLapEnabled;
   final bool isPaused;
   final bool isLocked;
   final VoidCallback onPause;
@@ -174,6 +176,7 @@ class _RunTrackingPanelState extends State<RunTrackingPanel>
                         paceSecondsPerKm: widget.paceSecondsPerKm,
                         calories: widget.calories,
                         splits: widget.splits,
+                        autoLapEnabled: widget.autoLapEnabled,
                         isPaused: widget.isPaused,
                       ),
                     ),

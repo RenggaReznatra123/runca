@@ -7,6 +7,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:runca/config/map_config.dart';
 import 'package:runca/features/dashboard/activity/models/activity_model.dart';
 import 'package:runca/ui/color.dart';
+import 'package:runca/ui/shared_view/keep_screen_awake.dart';
 import 'package:runca/utility/format_utils.dart';
 import 'package:runca/utility/snackbar_extension.dart';
 
@@ -14,6 +15,8 @@ import 'cubit/run_tracking_cubit.dart';
 import 'cubit/run_tracking_state.dart';
 import 'models/location_fix.dart';
 import 'models/run_goal.dart';
+import 'models/run_settings.dart';
+import 'run_settings_screen.dart';
 import 'run_summary_screen.dart';
 import 'widgets/run_floating_controls.dart';
 import 'widgets/run_map_attribution.dart';
@@ -31,6 +34,7 @@ class RunTrackingScreen extends StatelessWidget {
     required this.activityType,
     required this.goal,
     required this.initialPosition,
+    required this.settings,
   });
 
   final ActivityType activityType;
@@ -39,14 +43,22 @@ class RunTrackingScreen extends StatelessWidget {
   /// Lokasi terakhir dari layar Setup. Null kalau belum ada sinyal GPS.
   final LocationFix? initialPosition;
 
+  /// Pengaturan lari saat dimulai (Auto Pause, Auto Lap, Keep Screen Awake).
+  final RunSettings settings;
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => RunTrackingCubit(
         activityType: activityType,
         initialPosition: initialPosition,
+        autoPause: settings.autoPause,
+        lapKm: settings.autoLap.km,
       ),
-      child: _RunTrackingView(activityType: activityType, goal: goal),
+      child: KeepScreenAwake(
+        enabled: settings.keepScreenAwake,
+        child: _RunTrackingView(activityType: activityType, goal: goal),
+      ),
     );
   }
 }
@@ -105,6 +117,12 @@ class _RunTrackingViewState extends State<_RunTrackingView> {
     _moveTo(fix, zoom: MapConfig.followZoom);
   }
 
+  void _openSettings() {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute<void>(builder: (_) => const RunSettingsScreen()));
+  }
+
   void _showUnavailable(String page) {
     context.showUnavailableSnackbar(page, duration: const Duration(seconds: 2));
   }
@@ -112,7 +130,7 @@ class _RunTrackingViewState extends State<_RunTrackingView> {
   // ASUMSI: teks petunjuk (belum ada desain layar terkunci di Figma).
   void _showLockedHint() {
     context.showInfoSnackbar(
-            'Hold the button below to unlock.',
+      'Hold the button below to unlock.',
       duration: const Duration(seconds: 2),
     );
   }
@@ -214,7 +232,7 @@ class _RunTrackingViewState extends State<_RunTrackingView> {
                     activityType: widget.activityType,
                     leadingIcon: Icons.keyboard_arrow_down_rounded,
                     onBack: () => _showUnavailable('Minimize'),
-                    onSettingsTap: () => _showUnavailable('Run settings'),
+                    onSettingsTap: _openSettings,
                   ),
                 ),
                 Positioned(
@@ -264,6 +282,7 @@ class _RunTrackingViewState extends State<_RunTrackingView> {
                       calories: state.calories,
                       goal: widget.goal,
                       splits: state.splits,
+                      autoLapEnabled: state.autoLapEnabled,
                       isPaused: state.status == RunTrackingStatus.paused,
                       isLocked: state.isLocked,
                       onPause: cubit.pause,

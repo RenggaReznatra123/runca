@@ -25,6 +25,10 @@ import 'package:runca/repository/settings_repository.dart';
 import 'package:runca/repository/notifications_repository.dart';
 import 'package:runca/repository/leaderboard_repository.dart';
 import 'package:runca/repository/home_repository.dart';
+import 'package:runca/data/dummy/dummy_run_settings_repository.dart';
+import 'package:runca/repository/run_settings_repository.dart';
+import 'package:runca/data/dummy/dummy_step_repository.dart';
+import 'package:runca/repository/step_repository.dart';
 import 'package:runca/config/user_preference.dart';
 
 /// Nyalakan untuk menguji lari di emulator tanpa keluar rumah (titik GPS
@@ -76,6 +80,12 @@ void registerRepositories(GetIt locator) {
   locator.registerLazySingleton<HomeRepository>(
     () => DummyHomeRepository(locator.get<ActivityRepository>()),
   );
+
+  locator.registerLazySingleton<RunSettingsRepository>(
+    () => DummyRunSettingsRepository(locator.get<UserPreference>()),
+  );
+  // Langkah Treadmill masih simulasi. Ganti ke implementasi sensor nanti.
+  locator.registerLazySingleton<StepRepository>(() => DummyStepRepository());
   // Lokasi memakai GPS perangkat, atau simulasi lari kalau
   // _useDummyLocation bernilai true.
   locator.registerLazySingleton<LocationRepository>(
