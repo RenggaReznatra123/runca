@@ -83,6 +83,7 @@ class DummyActivityRepository implements ActivityRepository {
       durationSeconds: draft.durationSeconds,
       avgPaceSecondsPerKm: draft.avgPaceSecondsPerKm,
       calories: draft.calories,
+      steps: draft.steps,
       route: draft.route,
     );
 

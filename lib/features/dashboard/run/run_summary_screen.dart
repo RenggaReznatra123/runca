@@ -3,7 +3,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:runca/features/dashboard/activity/activity_detail_screen.dart';
 import 'package:runca/features/dashboard/activity/models/activity_draft.dart';
+import 'package:runca/features/dashboard/activity/models/activity_model.dart';
 import 'package:runca/features/dashboard/activity/widgets/activity_state_view.dart';
+import 'package:runca/features/dashboard/treadmill/widgets/treadmill_summary_add_card.dart';
+import 'package:runca/features/dashboard/treadmill/widgets/treadmill_summary_stats.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/utility/snackbar_extension.dart';
 
@@ -15,7 +18,8 @@ import 'widgets/run_summary_map.dart';
 import 'widgets/run_summary_stats.dart';
 import 'widgets/run_summary_title.dart';
 
-/// Layar "Run Complete!": menyimpan lari lalu menampilkan ringkasannya.
+/// Layar "Run Complete!" / "Treadmill Complete!": menyimpan aktivitas lalu
+/// menampilkan ringkasannya.
 class RunSummaryScreen extends StatelessWidget {
   const RunSummaryScreen({super.key, required this.draft});
 
@@ -32,6 +36,10 @@ class RunSummaryScreen extends StatelessWidget {
 
 class _RunSummaryView extends StatelessWidget {
   const _RunSummaryView();
+
+  void _showUnavailable(BuildContext context, String page) {
+    context.showUnavailableSnackbar(page, duration: const Duration(seconds: 2));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +64,8 @@ class _RunSummaryView extends StatelessWidget {
               return Center(child: ActivityErrorView(onRetry: cubit.save));
             }
 
+            final isTreadmill = activity.type == ActivityType.treadmill;
+
             return Column(
               children: [
                 Expanded(
@@ -65,27 +75,57 @@ class _RunSummaryView extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        RunSummaryHeader(startedAt: activity.startedAt),
+                        RunSummaryHeader(
+                          startedAt: activity.startedAt,
+                          title: isTreadmill
+                              ? 'Treadmill Complete!'
+                              : 'Run Complete!',
+                        ),
                         const SizedBox(height: 24),
                         RunSummaryTitle(
                           title: activity.title,
                           onRename: cubit.rename,
                         ),
                         const SizedBox(height: 24),
-                        RunSummaryStats(
-                          distanceKm: activity.distanceKm,
-                          durationSeconds: activity.durationSeconds,
-                          paceSecondsPerKm: activity.avgPaceSecondsPerKm,
-                          calories: activity.calories,
-                        ),
-                        const SizedBox(height: 24),
-                        RunSummaryMap(
-                          route: activity.route,
-                          onCameraTap: () => context.showUnavailableSnackbar(
-                            'Photo',
-                            duration: const Duration(seconds: 2),
+                        if (isTreadmill) ...[
+                          TreadmillSummaryStats(
+                            durationSeconds: activity.durationSeconds,
+                            steps: activity.steps ?? 0,
                           ),
-                        ),
+                          const SizedBox(height: 32),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TreadmillSummaryAddCard(
+                                  label: 'Calories',
+                                  onTap: () =>
+                                      _showUnavailable(context, 'Calories'),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: TreadmillSummaryAddCard(
+                                  label: 'Distance',
+                                  onTap: () =>
+                                      _showUnavailable(context, 'Distance'),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ] else ...[
+                          RunSummaryStats(
+                            distanceKm: activity.distanceKm,
+                            durationSeconds: activity.durationSeconds,
+                            paceSecondsPerKm: activity.avgPaceSecondsPerKm,
+                            calories: activity.calories,
+                          ),
+                          const SizedBox(height: 24),
+                          RunSummaryMap(
+                            route: activity.route,
+                            onCameraTap: () =>
+                                _showUnavailable(context, 'Photo'),
+                          ),
+                        ],
                       ],
                     ),
                   ),

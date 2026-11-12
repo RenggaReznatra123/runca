@@ -5,14 +5,18 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import 'package:runca/config/map_config.dart';
+import 'package:runca/features/dashboard/activity/models/activity_model.dart';
+import 'package:runca/features/dashboard/treadmill/treadmill_tracking_screen.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/utility/snackbar_extension.dart';
 
 import 'cubit/run_cubit.dart';
 import 'cubit/run_state.dart';
 import 'models/location_fix.dart';
+import 'models/run_settings.dart';
 import 'run_countdown_screen.dart';
 import 'run_location_messages.dart';
+import 'run_settings_screen.dart';
 import 'run_tracking_screen.dart';
 import 'widgets/run_activity_type_sheet.dart';
 import 'widgets/run_challenge_button.dart';
@@ -22,10 +26,10 @@ import 'widgets/run_map_attribution.dart';
 import 'widgets/run_map_view.dart';
 import 'widgets/run_stats_panel.dart';
 import 'widgets/run_top_bar.dart';
-import 'package:runca/features/dashboard/activity/models/activity_model.dart';
 import 'widgets/treadmill_setup_view.dart';
 
 /// Layar Setup lari: peta nyata, status GPS, target, dan tombol Start Run.
+/// Kalau jenis aktivitasnya Treadmill, isinya diganti tampilan tanpa peta.
 class RunScreen extends StatelessWidget {
   const RunScreen({super.key});
 
@@ -97,66 +101,71 @@ class _RunViewState extends State<_RunView> {
     cubit.saveGoal(submission);
   }
 
-  // SEMENTARA: layar Tracking Treadmill belum dibuat. Setelah hitung mundur,
-  // kembali ke Setup dan tampilkan SnackBar.
-  void _startTreadmill() {
-    final navigator = Navigator.of(context);
+  // Lari dimulai dengan pengaturan terbaru dari RunCubit: durasi countdown
+  // (Off = langsung ke Tracking), Auto Pause, Auto Lap, Keep Screen Awake.
+  Future<void> _startRun(RunState state) async {
+    final isTreadmill = state.activityType == ActivityType.treadmill;
 
-    navigator.push(
-      MaterialPageRoute<void>(
-        builder: (_) => RunCountdownScreen(
-          activityType: ActivityType.treadmill,
-          position: null,
-          onFinished: () {
-            navigator.pop();
-            if (mounted) _showUnavailable('Treadmill tracking');
-          },
-        ),
-      ),
-    );
-  }
+    // Treadmill tidak memakai GPS, jadi tidak perlu izin lokasi.
+    if (!isTreadmill) {
+      // Lari hanya bisa dimulai kalau izin dan layanan lokasi sudah siap.
+      if (state.locationStatus == RunLocationStatus.checking) {
+        context.showInfoSnackbar(
+          'Checking your location...',
+          duration: const Duration(seconds: 2),
+        );
+        return;
+      }
 
-  void _startRun(RunState state) {
-    if (state.activityType == ActivityType.treadmill) {
-      _startTreadmill();
-      return;
-    }
-    // Lari hanya bisa dimulai kalau izin dan layanan lokasi sudah siap.
-    if (state.locationStatus == RunLocationStatus.checking) {
-      context.showInfoSnackbar(
-        'Checking your location...',
-        duration: const Duration(seconds: 2),
-      );
-      return;
-    }
-
-    if (state.locationStatus != RunLocationStatus.ready) {
-      context.showRunLocationMessage(state.locationStatus);
-      return;
+      if (state.locationStatus != RunLocationStatus.ready) {
+        context.showRunLocationMessage(state.locationStatus);
+        return;
+      }
     }
 
     final cubit = context.read<RunCubit>();
     final navigator = Navigator.of(context);
     final setupRoute = ModalRoute.of(context);
+    final settings = await cubit.readSettings();
+
+    if (!mounted) return;
+
+    Widget buildTracking() {
+      if (isTreadmill) return TreadmillTrackingScreen(settings: settings);
+
+      final latest = cubit.state;
+
+      return RunTrackingScreen(
+        activityType: latest.activityType,
+        goal: latest.goal,
+        initialPosition: latest.position,
+        settings: settings,
+      );
+    }
+
+    // Countdown Off: langsung ke Tracking, layar Setup digantikan.
+    if (settings.countdown == CountdownOption.off) {
+      final tracking = buildTracking();
+
+      navigator.pushReplacement(
+        MaterialPageRoute<void>(builder: (_) => tracking),
+      );
+      return;
+    }
 
     navigator.push(
       MaterialPageRoute<void>(
         builder: (_) => RunCountdownScreen(
           activityType: state.activityType,
-          position: state.position,
+          position: isTreadmill ? null : state.position,
+          seconds: settings.countdown.seconds,
           onFinished: () {
-            final latest = cubit.state;
+            final tracking = buildTracking();
 
             // Ganti countdown dengan Tracking, lalu buang layar Setup di
             // bawahnya supaya tidak ada kilatan layar Setup.
             navigator.pushReplacement(
-              MaterialPageRoute<void>(
-                builder: (_) => RunTrackingScreen(
-                  activityType: latest.activityType,
-                  goal: latest.goal,
-                  initialPosition: latest.position,
-                ),
-              ),
+              MaterialPageRoute<void>(builder: (_) => tracking),
             );
             if (setupRoute != null) navigator.removeRoute(setupRoute);
           },
@@ -182,6 +191,18 @@ class _RunViewState extends State<_RunView> {
     }
 
     _moveTo(fix, zoom: MapConfig.followZoom);
+  }
+
+  Future<void> _openSettings() async {
+    final cubit = context.read<RunCubit>();
+    final navigator = Navigator.of(context);
+
+    await navigator.push(
+      MaterialPageRoute<void>(builder: (_) => const RunSettingsScreen()),
+    );
+
+    // Pengaturan dimuat ulang supaya berlaku untuk lari yang dimulai berikutnya.
+    if (!cubit.isClosed) cubit.loadSettings();
   }
 
   void _showUnavailable(String page) {
@@ -237,10 +258,11 @@ class _RunViewState extends State<_RunView> {
                   activityType: state.activityType,
                   onBack: () => Navigator.of(context).maybePop(),
                   onTypeTap: () => _selectType(state),
-                  onSettingsTap: () => _showUnavailable('Run settings'),
+                  onSettingsTap: _openSettings,
                   onStart: () => _startRun(state),
                 );
               }
+
               return Stack(
                 children: [
                   // Peta berhenti 24 di bawah puncak panel, supaya sudut
@@ -263,7 +285,7 @@ class _RunViewState extends State<_RunView> {
                       activityType: state.activityType,
                       onBack: () => Navigator.of(context).maybePop(),
                       onTypeTap: () => _selectType(state),
-                      onSettingsTap: () => _showUnavailable('Run settings'),
+                      onSettingsTap: _openSettings,
                     ),
                   ),
                   Positioned(

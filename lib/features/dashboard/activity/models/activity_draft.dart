@@ -12,6 +12,7 @@ class ActivityDraft {
     required this.avgPaceSecondsPerKm,
     required this.calories,
     required this.route,
+    this.steps,
   });
 
   final ActivityType type;
@@ -22,4 +23,7 @@ class ActivityDraft {
   final int avgPaceSecondsPerKm;
   final int calories;
   final List<RoutePoint> route;
+
+  /// Jumlah langkah. Hanya diisi untuk Treadmill.
+  final int? steps;
 }

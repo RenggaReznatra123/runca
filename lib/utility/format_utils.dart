@@ -246,4 +246,11 @@ class AppFormat {
     final sign = seconds < 0 ? '-' : '+';
     return '$sign${splitPace(seconds.abs())}';
   }
+
+  /// Jarak akhir lap: 1.0 -> '1', 0.5 -> '0.5', 1.5 -> '1.5'
+  static String lapDistance(double km) {
+    return km == km.roundToDouble()
+        ? km.round().toString()
+        : km.toStringAsFixed(1);
+  }
 }

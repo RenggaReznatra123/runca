@@ -5,13 +5,19 @@ import 'package:runca/ui/typography.dart';
 
 /// Angka besar dan labelnya (Time atau Steps) di layar Treadmill.
 class TreadmillMetric extends StatelessWidget {
-  const TreadmillMetric({super.key, required this.value, required this.label});
+  const TreadmillMetric({
+    super.key,
+    required this.value,
+    required this.label,
+    this.labelColor = AppPalette.textNeutralPrimary,
+  });
 
   /// Tinggi blok angka; dipakai layar untuk menaruh blok di titik tengahnya.
   static const double valueHeight = 76;
 
   final String value;
   final String label;
+  final Color labelColor;
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +38,7 @@ class TreadmillMetric extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Text(
-          label,
-          style: AppTypography.bodyMedium(color: AppPalette.textNeutralPrimary),
-        ),
+        Text(label, style: AppTypography.bodyMedium(color: labelColor)),
       ],
     );
   }

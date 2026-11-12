@@ -6,11 +6,18 @@ import 'package:runca/utility/format_utils.dart';
 
 import '../models/run_split.dart';
 
-/// Halaman Splits di layar penuh: pace tiap kilometer dan selisihnya.
+/// Halaman Splits di layar penuh: pace tiap lap dan selisihnya.
 class RunSplitsView extends StatelessWidget {
-  const RunSplitsView({super.key, required this.splits});
+  const RunSplitsView({
+    super.key,
+    required this.splits,
+    required this.autoLapEnabled,
+  });
 
   final List<RunSplit> splits;
+
+  /// False kalau Auto Lap dimatikan di Run Settings.
+  final bool autoLapEnabled;
 
   @override
   Widget build(BuildContext context) {
@@ -34,10 +41,16 @@ class RunSplitsView extends StatelessWidget {
           child: splits.isEmpty
               ? Center(
                   // ASUMSI: belum ada desain kosong di Figma.
-                  child: Text(
-                    'Splits will appear as you run.',
-                    style: AppTypography.bodyMedium(
-                      color: AppPalette.profileMutedText,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 28),
+                    child: Text(
+                      autoLapEnabled
+                          ? 'Splits will appear as you run.'
+                          : 'Auto Lap is off. Turn it on in Run Settings.',
+                      textAlign: TextAlign.center,
+                      style: AppTypography.bodyMedium(
+                        color: AppPalette.profileMutedText,
+                      ),
                     ),
                   ),
                 )
@@ -70,10 +83,7 @@ class _HeaderRow extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(28, 0, 21, 0),
       child: Row(
         children: [
-          SizedBox(
-            width: _kmColumnWidth,
-            child: Text('KM', style: style),
-          ),
+          SizedBox(width: _kmColumnWidth, child: Text('KM', style: style)),
           Expanded(
             child: Center(child: Text('Pace', style: style)),
           ),
@@ -93,7 +103,7 @@ class _SplitRow extends StatelessWidget {
   final RunSplit split;
 
   Color _deltaColor(int? delta) {
-    // Baris km yang sedang berjalan memakai teks hitam (sesuai Figma).
+    // Baris lap yang sedang berjalan memakai teks hitam (sesuai Figma).
     if (split.isCurrent) return AppPalette.baseBlack;
     if (delta == null || delta < 0) return AppPalette.textSuccess;
     if (delta > 0) return AppPalette.textDanger;
@@ -125,7 +135,10 @@ class _SplitRow extends StatelessWidget {
             width: _kmColumnWidth,
             child: Padding(
               padding: const EdgeInsets.only(left: 3),
-              child: Text('${split.km}', style: smallStyle),
+              child: Text(
+                AppFormat.lapDistance(split.distanceKm),
+                style: smallStyle,
+              ),
             ),
           ),
           Expanded(
