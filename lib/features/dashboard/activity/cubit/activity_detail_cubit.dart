@@ -19,6 +19,8 @@ class ActivityDetailCubit extends Cubit<ActivityDetailState> {
   final String _activityId;
   final ActivityRepository _repository;
 
+  bool _deleting = false;
+
   /// Muat awal dan tombol Try Again.
   Future<void> load() async {
     emit(const ActivityDetailState());
@@ -37,5 +39,33 @@ class ActivityDetailCubit extends Cubit<ActivityDetailState> {
     } else {
       emit(const ActivityDetailState(status: ActivityDetailStatus.failure));
     }
+  }
+
+  /// Ambil ulang tanpa loading (setelah Edit Activity). Kalau gagal,
+  /// tampilan lama dibiarkan.
+  Future<void> refresh() async {
+    final result = await _repository.getActivityDetail(id: _activityId);
+
+    if (isClosed) return;
+
+    if (result is DataStateSuccess<ActivityModel> && result.data != null) {
+      emit(
+        ActivityDetailState(
+          status: ActivityDetailStatus.success,
+          activity: result.data,
+        ),
+      );
+    }
+  }
+
+  /// Menghapus aktivitas. Mengembalikan true kalau berhasil.
+  Future<bool> delete() async {
+    if (_deleting) return false;
+
+    _deleting = true;
+    final result = await _repository.deleteActivity(id: _activityId);
+    _deleting = false;
+
+    return result is DataStateSuccess<bool> && result.data == true;
   }
 }

@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart';
 
 import 'package:runca/config/map_config.dart';
 import 'package:runca/features/dashboard/activity/models/activity_model.dart';
+import 'package:runca/features/dashboard/challenge/challenge_detail_screen.dart';
 import 'package:runca/features/dashboard/treadmill/treadmill_tracking_screen.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/utility/snackbar_extension.dart';
@@ -18,6 +19,7 @@ import 'run_countdown_screen.dart';
 import 'run_location_messages.dart';
 import 'run_settings_screen.dart';
 import 'run_tracking_screen.dart';
+import 'widgets/run_active_challenges_sheet.dart';
 import 'widgets/run_activity_type_sheet.dart';
 import 'widgets/run_challenge_button.dart';
 import 'widgets/run_floating_controls.dart';
@@ -205,6 +207,23 @@ class _RunViewState extends State<_RunView> {
     if (!cubit.isClosed) cubit.loadSettings();
   }
 
+  /// Badge challenge: buka sheet Active Challenges. Kartu yang ditekan
+  /// membuka halaman detailnya.
+  Future<void> _openChallenges() async {
+    final navigator = Navigator.of(context);
+
+    final challengeId = await RunActiveChallengesSheet.show(context);
+
+    if (challengeId == null || !mounted) return;
+
+    navigator.push(
+      MaterialPageRoute<void>(
+        builder: (_) =>
+            ChallengeDetailScreen(challengeId: challengeId, fromRun: true),
+      ),
+    );
+  }
+
   void _showUnavailable(String page) {
     context.showUnavailableSnackbar(page, duration: const Duration(seconds: 2));
   }
@@ -291,9 +310,7 @@ class _RunViewState extends State<_RunView> {
                   Positioned(
                     top: badgeTop,
                     left: 20,
-                    child: RunChallengeButton(
-                      onTap: () => _showUnavailable('Challenge'),
-                    ),
+                    child: RunChallengeButton(onTap: _openChallenges),
                   ),
                   Positioned(
                     left: 0,

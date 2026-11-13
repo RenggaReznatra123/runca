@@ -1,9 +1,12 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
 import 'package:runca/ui/color.dart';
 
-/// Gambar dari URL (diawali 'http') atau aset. Kalau path kosong atau gagal
-/// dimuat, tampil [placeholder] (atau kotak abu-abu dengan ikon).
+/// Gambar dari URL (diawali 'http'), file di perangkat (diawali '/'), atau
+/// aset. Kalau path kosong atau gagal dimuat, tampil [placeholder] (atau
+/// kotak abu-abu dengan ikon).
 class AppImage extends StatelessWidget {
   const AppImage({
     super.key,
@@ -29,6 +32,16 @@ class AppImage extends StatelessWidget {
     if (source.startsWith('http')) {
       return Image.network(
         source,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (_, _, _) => _fallback(),
+      );
+    }
+
+    if (source.startsWith('/')) {
+      return Image.file(
+        File(source),
         width: width,
         height: height,
         fit: fit,

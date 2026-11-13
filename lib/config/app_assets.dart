@@ -42,4 +42,8 @@ class AppAssets {
 
   // Profile - Edit Profile
   static const String avatarDede = 'assets/images/avatar_dede.png';
+
+  // Share Activity (export logo dari Figma ke path ini)
+  static const String shareInstagram = 'assets/images/share_instagram.png';
+  static const String shareWhatsapp = 'assets/images/share_whatsapp.png';
 }

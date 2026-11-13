@@ -29,6 +29,9 @@ import 'package:runca/data/dummy/dummy_run_settings_repository.dart';
 import 'package:runca/repository/run_settings_repository.dart';
 import 'package:runca/data/dummy/dummy_step_repository.dart';
 import 'package:runca/repository/step_repository.dart';
+import 'package:runca/data/dummy/dummy_place_name_repository.dart';
+import 'package:runca/data/geocoding_place_name_repository.dart';
+import 'package:runca/repository/place_name_repository.dart';
 import 'package:runca/config/user_preference.dart';
 
 /// Nyalakan untuk menguji lari di emulator tanpa keluar rumah (titik GPS
@@ -92,5 +95,12 @@ void registerRepositories(GetIt locator) {
     () => _useDummyLocation
         ? DummyLocationRepository()
         : GeolocatorLocationRepository(),
+  );
+
+  // Nama tempat: simulasi selama _useDummyLocation bernilai true.
+  locator.registerLazySingleton<PlaceNameRepository>(
+    () => _useDummyLocation
+        ? DummyPlaceNameRepository()
+        : GeocodingPlaceNameRepository(),
   );
 }

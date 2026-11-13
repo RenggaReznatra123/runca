@@ -5,6 +5,7 @@ import 'package:runca/data/dummy_config.dart';
 import 'package:runca/features/dashboard/challenge/models/challenge_model.dart';
 import 'package:runca/repository/challenge_repository.dart';
 import 'package:runca/utility/resource/data_state.dart';
+import 'package:runca/features/dashboard/challenge/models/challenge_progress.dart';
 
 class DummyChallengeRepository implements ChallengeRepository {
   DummyChallengeRepository(this._wallet);
@@ -19,6 +20,49 @@ class DummyChallengeRepository implements ChallengeRepository {
     'Complete 5 km in a single activity',
     'Run between 6:00 AM and 9:00 AM',
   ];
+  @override
+  Future<DataState<List<ChallengeProgress>>>
+  getActiveChallengeProgress() async {
+    await DummyConfig.simulateNetwork();
+
+    switch (DummyConfig.scenario) {
+      case DummyScenario.failure:
+        return DummyConfig.failure<List<ChallengeProgress>>(
+          '/challenges/active/progress',
+        );
+      case DummyScenario.empty:
+        return const DataStateSuccess<List<ChallengeProgress>>([]);
+      case DummyScenario.data:
+        return DataStateSuccess<List<ChallengeProgress>>(_buildProgress());
+    }
+  }
+
+  // Dummy: id cocok dengan challenge Discover supaya halaman detailnya ada.
+  List<ChallengeProgress> _buildProgress() {
+    return const [
+      ChallengeProgress(
+        id: 'challenge-1',
+        title: '5K Morning Run',
+        currentKm: 3.2,
+        targetKm: 5,
+        imageUrl: AppAssets.challengeImage,
+      ),
+      ChallengeProgress(
+        id: 'challenge-2',
+        title: '5K Morning Run',
+        currentKm: 1.2,
+        targetKm: 5,
+        imageUrl: AppAssets.challengeImage,
+      ),
+      ChallengeProgress(
+        id: 'challenge-3',
+        title: '5K Morning Run',
+        currentKm: 4.5,
+        targetKm: 5,
+        imageUrl: AppAssets.challengeImage,
+      ),
+    ];
+  }
 
   @override
   Future<DataState<List<ChallengeModel>>> getChallenges({

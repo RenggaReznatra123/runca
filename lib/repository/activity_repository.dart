@@ -24,7 +24,18 @@ abstract class ActivityRepository {
     required String title,
   });
 
-  /// Memberi sinyal setiap kali daftar aktivitas berubah (simpan, ubah nama),
-  /// supaya Home dan tab Activity memuat ulang.
+  /// Mengubah judul dan foto aktivitas (layar Edit Activity).
+  /// [photoPath] null berarti aktivitas tanpa foto.
+  Future<DataState<ActivityModel>> updateActivity({
+    required String id,
+    required String title,
+    String? photoPath,
+  });
+
+  /// Menghapus aktivitas. Mengembalikan true kalau berhasil.
+  Future<DataState<bool>> deleteActivity({required String id});
+
+  /// Memberi sinyal setiap kali daftar aktivitas berubah (simpan, ubah,
+  /// hapus), supaya Home dan tab Activity memuat ulang.
   Stream<void> get changes;
 }

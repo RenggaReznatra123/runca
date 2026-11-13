@@ -29,6 +29,7 @@ class ActivityModel {
     this.mapImageUrl,
     this.route = const [],
     this.steps,
+    this.photoPath,
   });
 
   final String id;
@@ -57,7 +58,16 @@ class ActivityModel {
   /// Jumlah langkah. Hanya ada untuk Treadmill, selain itu null.
   final int? steps;
 
-  ActivityModel copyWith({String? title}) {
+  /// Foto aktivitas (URL atau path file). Null kalau tidak ada foto.
+  final String? photoPath;
+
+  /// [clearPhoto] true menghapus foto (karena null di [photoPath] berarti
+  /// "tidak diubah").
+  ActivityModel copyWith({
+    String? title,
+    String? photoPath,
+    bool clearPhoto = false,
+  }) {
     return ActivityModel(
       id: id,
       type: type,
@@ -70,6 +80,7 @@ class ActivityModel {
       mapImageUrl: mapImageUrl,
       route: route,
       steps: steps,
+      photoPath: clearPhoto ? null : (photoPath ?? this.photoPath),
     );
   }
 }
