@@ -112,4 +112,45 @@ class DummyActivityRepository implements ActivityRepository {
 
     return DataStateSuccess<ActivityModel>(updated);
   }
+
+  @override
+  Future<DataState<ActivityModel>> updateActivity({
+    required String id,
+    required String title,
+    String? photoPath,
+  }) async {
+    await DummyConfig.simulateNetwork();
+
+    final index = _activities.indexWhere((activity) => activity.id == id);
+
+    if (DummyConfig.scenario == DummyScenario.failure || index == -1) {
+      return DummyConfig.failure<ActivityModel>('/activities/$id');
+    }
+
+    final updated = _activities[index].copyWith(
+      title: title,
+      photoPath: photoPath,
+      clearPhoto: photoPath == null,
+    );
+    _activities[index] = updated;
+    _changes.add(null);
+
+    return DataStateSuccess<ActivityModel>(updated);
+  }
+
+  @override
+  Future<DataState<bool>> deleteActivity({required String id}) async {
+    await DummyConfig.simulateNetwork();
+
+    final index = _activities.indexWhere((activity) => activity.id == id);
+
+    if (DummyConfig.scenario == DummyScenario.failure || index == -1) {
+      return DummyConfig.failure<bool>('/activities/$id');
+    }
+
+    _activities.removeAt(index);
+    _changes.add(null);
+
+    return const DataStateSuccess<bool>(true);
+  }
 }

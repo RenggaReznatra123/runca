@@ -8,9 +8,16 @@ import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
 
 class ChallengeDetailLoadedView extends StatelessWidget {
-  const ChallengeDetailLoadedView({super.key, required this.challenge});
+  const ChallengeDetailLoadedView({
+    super.key,
+    required this.challenge,
+    this.fromRun = false,
+  });
 
   final ChallengeDetail challenge;
+
+  /// True kalau dibuka dari layar Setup lari.
+  final bool fromRun;
 
   static const double _sheetTop = 298;
   static const double _bannerHeight = 318;
@@ -48,9 +55,18 @@ class ChallengeDetailLoadedView extends StatelessWidget {
               ),
             ),
             _JoinBar(
-              onJoin: () => Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const RunScreen()),
-              ),
+              onJoin: () {
+                // Dibuka dari Setup lari: kembali ke Setup yang sudah ada,
+                // supaya tidak ada dua layar Setup bertumpuk.
+                if (fromRun) {
+                  Navigator.of(context).maybePop();
+                  return;
+                }
+
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const RunScreen()),
+                );
+              },
             ),
           ],
         ),

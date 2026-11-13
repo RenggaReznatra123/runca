@@ -9,21 +9,31 @@ import 'package:runca/ui/color.dart';
 import 'widgets/challenge_detail_loaded_view.dart';
 
 class ChallengeDetailScreen extends StatelessWidget {
-  const ChallengeDetailScreen({super.key, required this.challengeId});
+  const ChallengeDetailScreen({
+    super.key,
+    required this.challengeId,
+    this.fromRun = false,
+  });
 
   final String challengeId;
+
+  /// True kalau dibuka dari layar Setup lari. Join Challenge lalu kembali ke
+  /// Setup yang sudah ada, bukan membuka Setup baru.
+  final bool fromRun;
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) => ChallengeDetailCubit(challengeId: challengeId),
-      child: const _ChallengeDetailView(),
+      child: _ChallengeDetailView(fromRun: fromRun),
     );
   }
 }
 
 class _ChallengeDetailView extends StatelessWidget {
-  const _ChallengeDetailView();
+  const _ChallengeDetailView({required this.fromRun});
+
+  final bool fromRun;
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +50,7 @@ class _ChallengeDetailView extends StatelessWidget {
           return const _DetailLoading();
         }
 
-        return ChallengeDetailLoadedView(challenge: detail);
+        return ChallengeDetailLoadedView(challenge: detail, fromRun: fromRun);
       },
     );
   }

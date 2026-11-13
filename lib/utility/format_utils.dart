@@ -253,4 +253,15 @@ class AppFormat {
         ? km.round().toString()
         : km.toStringAsFixed(1);
   }
+
+  /// 0.64 -> '64%'
+  static String percent(double fraction) => '${(fraction * 100).round()}%';
+
+  /// 3.2 -> '3.2 km', 5 -> '5 km'
+  static String kmShort(double km) => '${change(km)} km';
+
+  /// 1 -> '1 photo', 0 -> '0 photos'
+  static String photoCount(int count) {
+    return count == 1 ? '1 photo' : '$count photos';
+  }
 }

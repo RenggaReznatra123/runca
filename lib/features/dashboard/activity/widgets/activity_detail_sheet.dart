@@ -9,6 +9,7 @@ import '../models/activity_model.dart';
 import 'activity_detail_stats.dart';
 
 /// Sheet putih di bawah peta: jenis, tanggal, judul, dan statistik.
+/// Bisa ditarik ke atas untuk melihat bagian di bawah statistik.
 class ActivityDetailSheet extends StatelessWidget {
   const ActivityDetailSheet({super.key, required this.activity});
 
@@ -86,6 +87,23 @@ class ActivityDetailSheet extends StatelessWidget {
               ),
               const SizedBox(height: 32),
               ActivityDetailStats(activity: activity),
+              const SizedBox(height: 32),
+              Text(
+                'Elevation',
+                style: AppTypography.titleLarge(
+                  color: AppPalette.textNeutralPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              // ASUMSI: isi grafik Elevation belum ada di Figma, dan data
+              // ketinggian belum direkam aplikasi.
+              Text(
+                'No elevation data recorded.',
+                style: AppTypography.bodyMedium(
+                  color: AppPalette.profileMutedText,
+                ),
+              ),
+              const SizedBox(height: 120),
             ],
           ),
         );
