@@ -11,6 +11,7 @@ import 'package:runca/utility/resource/data_state.dart';
 import '../models/location_fix.dart';
 import '../models/run_goal.dart';
 import '../models/run_settings.dart';
+import '../models/run_start_decision.dart';
 import 'run_state.dart';
 
 class RunCubit extends Cubit<RunState> {
@@ -62,6 +63,21 @@ class RunCubit extends Cubit<RunState> {
   Future<RunSettings> readSettings() async {
     await _settingsLoading;
     return _settings;
+  }
+
+  Future<RunStartDecision> requestStart() async {
+    final isTreadmill = state.activityType == ActivityType.treadmill;
+
+    if (!isTreadmill &&
+        state.locationStatus == RunLocationStatus.checking) {
+      return const RunStartChecking();
+    }
+
+    if (!isTreadmill && state.locationStatus != RunLocationStatus.ready) {
+      return RunStartBlocked(state.locationStatus);
+    }
+
+    return RunStartReady(await readSettings());
   }
 
   /// Memeriksa izin lalu mulai membaca lokasi. Dipanggil saat layar dibuka

@@ -1,5 +1,7 @@
 enum TreadmillTrackingStatus { running, paused, finished }
 
+enum TreadmillFinishAttempt { finished, noData }
+
 class TreadmillTrackingState {
   const TreadmillTrackingState({
     this.status = TreadmillTrackingStatus.running,

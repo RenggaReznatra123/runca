@@ -8,6 +8,7 @@ import 'package:runca/features/dashboard/activity/models/activity_model.dart';
 import 'package:runca/features/dashboard/profile/models/edit_profile_model.dart';
 import 'package:runca/repository/location_repository.dart';
 import 'package:runca/repository/profile_repository.dart';
+import 'package:runca/utility/format_utils.dart';
 import 'package:runca/utility/geo_utils.dart';
 import 'package:runca/utility/resource/data_state.dart';
 
@@ -273,13 +274,21 @@ class RunTrackingCubit extends Cubit<RunTrackingState> {
       ? state.durationSeconds > 0
       : state.distanceKm > 0;
 
+  RunFinishAttempt attemptFinish() {
+    if (!hasRecordedData) return RunFinishAttempt.noData;
+
+    finish();
+    return RunFinishAttempt.finished;
+  }
+
   /// Mengubah hasil lari menjadi data yang dikirim ke repository.
-  ActivityDraft buildDraft({required String title}) {
+  ActivityDraft buildDraft() {
     final distanceKm = state.distanceKm;
+    final noun = _activityType == ActivityType.cycling ? 'Ride' : 'Run';
 
     return ActivityDraft(
       type: _activityType,
-      title: title,
+      title: AppFormat.defaultActivityTitle(startedAt, noun: noun),
       startedAt: startedAt,
       distanceKm: distanceKm,
       durationSeconds: state.durationSeconds,
