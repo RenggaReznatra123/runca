@@ -6,6 +6,7 @@ import 'package:runca/config/service_locator.dart';
 import 'package:runca/features/dashboard/activity/models/activity_draft.dart';
 import 'package:runca/features/dashboard/activity/models/activity_model.dart';
 import 'package:runca/repository/step_repository.dart';
+import 'package:runca/utility/format_utils.dart';
 
 import 'treadmill_tracking_state.dart';
 
@@ -53,12 +54,22 @@ class TreadmillTrackingCubit extends Cubit<TreadmillTrackingState> {
   /// True kalau sudah ada data yang layak disimpan (Treadmill cukup durasi).
   bool get hasRecordedData => state.durationSeconds > 0;
 
+  TreadmillFinishAttempt attemptFinish() {
+    if (!hasRecordedData) return TreadmillFinishAttempt.noData;
+
+    finish();
+    return TreadmillFinishAttempt.finished;
+  }
+
   /// ASUMSI: jarak, pace, dan kalori 0 karena belum ada sensor dan desain
   /// ringkasan Treadmill.
-  ActivityDraft buildDraft({required String title}) {
+  ActivityDraft buildDraft() {
     return ActivityDraft(
       type: ActivityType.treadmill,
-      title: title,
+      title: AppFormat.defaultActivityTitle(
+        startedAt,
+        noun: ActivityType.treadmill.label,
+      ),
       startedAt: startedAt,
       distanceKm: 0,
       durationSeconds: state.durationSeconds,

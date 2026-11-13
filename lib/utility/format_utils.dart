@@ -179,6 +179,8 @@ class AppFormat {
     return parts.isEmpty || parts.first.isEmpty ? 'there' : parts.first;
   }
 
+  static String appVersionLabel(String version) => 'Plarita v$version';
+
   /// 48 -> '48 vouchers', 1 -> '1 voucher'
   static String voucherCount(int count) {
     return count == 1 ? '1 voucher' : '$count vouchers';

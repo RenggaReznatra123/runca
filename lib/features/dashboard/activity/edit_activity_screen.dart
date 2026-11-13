@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:image_picker/image_picker.dart';
 
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/shared_view/app_page_header.dart';
@@ -42,7 +41,6 @@ class _EditActivityViewState extends State<_EditActivityView> {
   late final TextEditingController _controller = TextEditingController(
     text: widget.initialTitle,
   );
-  late bool _canSave = widget.initialTitle.trim().isNotEmpty;
 
   @override
   void initState() {
@@ -57,62 +55,53 @@ class _EditActivityViewState extends State<_EditActivityView> {
   }
 
   void _onTextChanged() {
-    final canSave = _controller.text.trim().isNotEmpty;
-
-    if (canSave != _canSave) setState(() => _canSave = canSave);
-  }
-
-  Future<void> _pickPhoto() async {
-    final cubit = context.read<EditActivityCubit>();
-
-    try {
-      final file = await ImagePicker().pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 85,
-      );
-
-      if (file == null || cubit.isClosed) return;
-
-      cubit.setPhoto(file.path);
-    } catch (_) {
-      if (mounted) context.showErrorSnackbar('Unable to open your photos.');
-    }
-  }
-
-  // ASUMSI: satu foto per aktivitas. Kotak kamera hanya menambah kalau belum
-  // ada foto; kalau sudah ada, pengguna diarahkan ke Change Photo.
-  void _onAddTap(EditActivityState state) {
-    if (state.photoPath != null) {
-      context.showInfoSnackbar(
-        'One photo per activity. Use Change Photo to replace it.',
-        duration: const Duration(seconds: 2),
-      );
-      return;
-    }
-
-    _pickPhoto();
+    context.read<EditActivityCubit>().updateTitle(_controller.text);
   }
 
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<EditActivityCubit>();
 
-    return BlocListener<EditActivityCubit, EditActivityState>(
-      listenWhen: (previous, current) => previous.status != current.status,
-      listener: (context, state) {
-        switch (state.status) {
-          case EditActivityStatus.saved:
-            Navigator.of(context).pop(true);
-          case EditActivityStatus.failure:
-            context.showErrorSnackbar(
-              'Unable to update activity. Please try again.',
-            );
-            cubit.clearStatus();
-          case EditActivityStatus.idle:
-          case EditActivityStatus.saving:
-            break;
-        }
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<EditActivityCubit, EditActivityState>(
+          listenWhen: (previous, current) => previous.status != current.status,
+          listener: (context, state) {
+            switch (state.status) {
+              case EditActivityStatus.saved:
+                Navigator.of(context).pop(true);
+              case EditActivityStatus.failure:
+                context.showErrorSnackbar(
+                  'Unable to update activity. Please try again.',
+                );
+                cubit.clearStatus();
+              case EditActivityStatus.idle:
+              case EditActivityStatus.saving:
+                break;
+            }
+          },
+        ),
+        BlocListener<EditActivityCubit, EditActivityState>(
+          listenWhen: (previous, current) =>
+              previous.notice != current.notice &&
+              current.notice != EditActivityNotice.none,
+          listener: (context, state) {
+            switch (state.notice) {
+              case EditActivityNotice.photoLimit:
+                context.showInfoSnackbar(
+                  'One photo per activity. Use Change Photo to replace it.',
+                  duration: const Duration(seconds: 2),
+                );
+              case EditActivityNotice.pickFailed:
+                context.showErrorSnackbar('Unable to open your photos.');
+              case EditActivityNotice.none:
+                break;
+            }
+
+            cubit.clearNotice();
+          },
+        ),
+      ],
       child: Scaffold(
         backgroundColor: AppPalette.baseWhite,
         body: SafeArea(
@@ -141,20 +130,20 @@ class _EditActivityViewState extends State<_EditActivityView> {
                                 const SizedBox(height: 24),
                                 EditActivityPhotoSection(
                                   photoPath: state.photoPath,
-                                  onChange: _pickPhoto,
+                                  onChange: cubit.pickPhoto,
                                   onRemove: cubit.removePhoto,
-                                  onAdd: () => _onAddTap(state),
+                                  onAdd: cubit.addPhotoRequested,
                                 ),
                               ],
                             ),
                           ),
                         ),
                         EditActivityActions(
-                          canSave: _canSave,
+                          canSave: state.canSave,
                           isSaving: state.status == EditActivityStatus.saving,
                           onSave: () {
                             FocusScope.of(context).unfocus();
-                            cubit.save(_controller.text);
+                            cubit.save();
                           },
                           onCancel: () => Navigator.of(context).maybePop(),
                         ),

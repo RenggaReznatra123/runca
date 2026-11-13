@@ -8,7 +8,6 @@ import 'package:runca/config/map_config.dart';
 import 'package:runca/features/dashboard/activity/models/activity_model.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/shared_view/keep_screen_awake.dart';
-import 'package:runca/utility/format_utils.dart';
 import 'package:runca/utility/snackbar_extension.dart';
 
 import 'cubit/run_tracking_cubit.dart';
@@ -140,25 +139,17 @@ class _RunTrackingViewState extends State<_RunTrackingView> {
   Future<void> _handleFinish() async {
     final cubit = context.read<RunTrackingCubit>();
 
-    if (!cubit.hasRecordedData) {
+    final result = cubit.attemptFinish();
+    if (result == RunFinishAttempt.noData) {
       final discard = await RunNoActivityDialog.show(context);
 
       if (discard == true && mounted) Navigator.of(context).pop();
-      return;
     }
-
-    cubit.finish();
   }
 
   void _openSummary() {
     final trackingCubit = context.read<RunTrackingCubit>();
-    final noun = widget.activityType == ActivityType.cycling ? 'Ride' : 'Run';
-    final draft = trackingCubit.buildDraft(
-      title: AppFormat.defaultActivityTitle(
-        trackingCubit.startedAt,
-        noun: noun,
-      ),
-    );
+    final draft = trackingCubit.buildDraft();
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(builder: (_) => RunSummaryScreen(draft: draft)),

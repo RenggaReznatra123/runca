@@ -3,6 +3,8 @@ import '../models/run_split.dart';
 
 enum RunTrackingStatus { running, paused, finished }
 
+enum RunFinishAttempt { finished, noData }
+
 class RunTrackingState {
   const RunTrackingState({
     this.status = RunTrackingStatus.running,

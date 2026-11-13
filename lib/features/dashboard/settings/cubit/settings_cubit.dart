@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:runca/config/service_locator.dart';
 import 'package:runca/features/dashboard/settings/models/app_settings.dart';
 import 'package:runca/repository/settings_repository.dart';
@@ -9,7 +10,11 @@ import 'settings_state.dart';
 class SettingsCubit extends Cubit<SettingsState> {
   SettingsCubit({SettingsRepository? repository})
     : _repository = repository ?? serviceLocator.get<SettingsRepository>(),
-      super(const SettingsState()) {
+      super(
+        SettingsState(
+          appVersion: serviceLocator.get<PackageInfo>().version,
+        ),
+      ) {
     load();
   }
 

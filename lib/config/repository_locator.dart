@@ -31,7 +31,9 @@ import 'package:runca/data/dummy/dummy_step_repository.dart';
 import 'package:runca/repository/step_repository.dart';
 import 'package:runca/data/dummy/dummy_place_name_repository.dart';
 import 'package:runca/data/geocoding_place_name_repository.dart';
+import 'package:runca/data/image_picker_photo_picker_repository.dart';
 import 'package:runca/repository/place_name_repository.dart';
+import 'package:runca/repository/photo_picker_repository.dart';
 import 'package:runca/config/user_preference.dart';
 
 /// Nyalakan untuk menguji lari di emulator tanpa keluar rumah (titik GPS
@@ -43,6 +45,9 @@ const bool _useDummyLocation = true;
 /// Saat API siap, implementasi repository dapat diganti tanpa
 /// perlu mengubah Cubit, State, dan tampilan.
 void registerRepositories(GetIt locator) {
+  locator.registerLazySingleton<PhotoPickerRepository>(
+    () => ImagePickerPhotoPickerRepository(),
+  );
   locator.registerLazySingleton<DummyWallet>(() => DummyWallet());
 
   locator.registerLazySingleton<ActivityRepository>(

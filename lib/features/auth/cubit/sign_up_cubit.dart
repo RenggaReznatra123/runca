@@ -41,8 +41,7 @@ class SignUpCubit extends Cubit<SignUpState> {
       }
 
       emit(SignUpStateSuccess());
-    } catch (error, stackTrace) {
-      debugPrint('Sign up failed: $error\n$stackTrace');
+    } catch (_) {
       if (isClosed) return;
 
       emit(SignUpStateError(message: _signUpFailedMessage));

@@ -10,7 +10,6 @@ import 'package:runca/features/dashboard/run/widgets/run_no_activity_dialog.dart
 import 'package:runca/features/dashboard/run/widgets/run_top_bar.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/shared_view/keep_screen_awake.dart';
-import 'package:runca/utility/format_utils.dart';
 import 'package:runca/utility/snackbar_extension.dart';
 
 import 'cubit/treadmill_tracking_cubit.dart';
@@ -63,24 +62,17 @@ class _TreadmillTrackingView extends StatelessWidget {
   Future<void> _handleFinish(BuildContext context) async {
     final cubit = context.read<TreadmillTrackingCubit>();
 
-    if (!cubit.hasRecordedData) {
+    final result = cubit.attemptFinish();
+    if (result == TreadmillFinishAttempt.noData) {
       final discard = await RunNoActivityDialog.show(context);
 
       if (discard == true && context.mounted) Navigator.of(context).pop();
-      return;
     }
-
-    cubit.finish();
   }
 
   void _openSummary(BuildContext context) {
     final cubit = context.read<TreadmillTrackingCubit>();
-    final draft = cubit.buildDraft(
-      title: AppFormat.defaultActivityTitle(
-        cubit.startedAt,
-        noun: ActivityType.treadmill.label,
-      ),
-    );
+    final draft = cubit.buildDraft();
 
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(builder: (_) => RunSummaryScreen(draft: draft)),

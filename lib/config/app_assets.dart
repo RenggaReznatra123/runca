@@ -15,7 +15,6 @@ class AppAssets {
 
   // Challenge
   static const String challengeImage = 'assets/images/challenge.png';
-  static const String activityEmpty = 'assets/images/activity_empty.png';
   static const String challengeActiveEmpty =
       'assets/images/challenge_active_empty.png';
   static const String challengeHistoryEmpty =

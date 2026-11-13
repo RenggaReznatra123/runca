@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:runca/config/service_locator.dart';
 import 'package:runca/features/auth/cubit/auth_cubit.dart';
 import 'package:runca/features/auth/login_screen.dart';
 import 'package:runca/features/dashboard/settings/change_password_screen.dart';
@@ -17,6 +15,7 @@ import 'package:runca/features/dashboard/settings/widgets/settings_header.dart';
 import 'package:runca/features/dashboard/settings/widgets/settings_logout_dialog.dart';
 import 'package:runca/features/dashboard/settings/widgets/settings_list.dart';
 import 'package:runca/ui/color.dart';
+import 'package:runca/utility/format_utils.dart';
 import 'package:runca/utility/snackbar_extension.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -155,8 +154,7 @@ class SettingsScreen extends StatelessWidget {
 
                           return SettingsList(
                             state: state,
-                            version:
-                                'Plarita v${serviceLocator.get<PackageInfo>().version}',
+                            version: AppFormat.appVersionLabel(state.appVersion),
                             onChangePassword: () =>
                                 _openChangePassword(context),
                             onFaq: () => _openFaq(context),

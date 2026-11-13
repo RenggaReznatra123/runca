@@ -15,6 +15,7 @@ import 'cubit/run_cubit.dart';
 import 'cubit/run_state.dart';
 import 'models/location_fix.dart';
 import 'models/run_settings.dart';
+import 'models/run_start_decision.dart';
 import 'run_countdown_screen.dart';
 import 'run_location_messages.dart';
 import 'run_settings_screen.dart';
@@ -107,73 +108,67 @@ class _RunViewState extends State<_RunView> {
   // (Off = langsung ke Tracking), Auto Pause, Auto Lap, Keep Screen Awake.
   Future<void> _startRun(RunState state) async {
     final isTreadmill = state.activityType == ActivityType.treadmill;
+    final cubit = context.read<RunCubit>();
+    final navigator = Navigator.of(context);
+    final setupRoute = ModalRoute.of(context);
+    final decision = await cubit.requestStart();
 
-    // Treadmill tidak memakai GPS, jadi tidak perlu izin lokasi.
-    if (!isTreadmill) {
-      // Lari hanya bisa dimulai kalau izin dan layanan lokasi sudah siap.
-      if (state.locationStatus == RunLocationStatus.checking) {
+    if (!mounted) return;
+
+    switch (decision) {
+      case RunStartChecking():
         context.showInfoSnackbar(
           'Checking your location...',
           duration: const Duration(seconds: 2),
         );
         return;
-      }
-
-      if (state.locationStatus != RunLocationStatus.ready) {
-        context.showRunLocationMessage(state.locationStatus);
+      case RunStartBlocked(:final status):
+        context.showRunLocationMessage(status);
         return;
-      }
+      case RunStartReady(:final settings):
+        Widget buildTracking() {
+          if (isTreadmill) return TreadmillTrackingScreen(settings: settings);
+
+          final latest = cubit.state;
+
+          return RunTrackingScreen(
+            activityType: latest.activityType,
+            goal: latest.goal,
+            initialPosition: latest.position,
+            settings: settings,
+          );
+        }
+
+        // Countdown Off: langsung ke Tracking, layar Setup digantikan.
+        if (settings.countdown == CountdownOption.off) {
+          final tracking = buildTracking();
+
+          navigator.pushReplacement(
+            MaterialPageRoute<void>(builder: (_) => tracking),
+          );
+          return;
+        }
+
+        navigator.push(
+          MaterialPageRoute<void>(
+            builder: (_) => RunCountdownScreen(
+              activityType: state.activityType,
+              position: isTreadmill ? null : state.position,
+              seconds: settings.countdown.seconds,
+              onFinished: () {
+                final tracking = buildTracking();
+
+                // Ganti countdown dengan Tracking, lalu buang layar Setup di
+                // bawahnya supaya tidak ada kilatan layar Setup.
+                navigator.pushReplacement(
+                  MaterialPageRoute<void>(builder: (_) => tracking),
+                );
+                if (setupRoute != null) navigator.removeRoute(setupRoute);
+              },
+            ),
+          ),
+        );
     }
-
-    final cubit = context.read<RunCubit>();
-    final navigator = Navigator.of(context);
-    final setupRoute = ModalRoute.of(context);
-    final settings = await cubit.readSettings();
-
-    if (!mounted) return;
-
-    Widget buildTracking() {
-      if (isTreadmill) return TreadmillTrackingScreen(settings: settings);
-
-      final latest = cubit.state;
-
-      return RunTrackingScreen(
-        activityType: latest.activityType,
-        goal: latest.goal,
-        initialPosition: latest.position,
-        settings: settings,
-      );
-    }
-
-    // Countdown Off: langsung ke Tracking, layar Setup digantikan.
-    if (settings.countdown == CountdownOption.off) {
-      final tracking = buildTracking();
-
-      navigator.pushReplacement(
-        MaterialPageRoute<void>(builder: (_) => tracking),
-      );
-      return;
-    }
-
-    navigator.push(
-      MaterialPageRoute<void>(
-        builder: (_) => RunCountdownScreen(
-          activityType: state.activityType,
-          position: isTreadmill ? null : state.position,
-          seconds: settings.countdown.seconds,
-          onFinished: () {
-            final tracking = buildTracking();
-
-            // Ganti countdown dengan Tracking, lalu buang layar Setup di
-            // bawahnya supaya tidak ada kilatan layar Setup.
-            navigator.pushReplacement(
-              MaterialPageRoute<void>(builder: (_) => tracking),
-            );
-            if (setupRoute != null) navigator.removeRoute(setupRoute);
-          },
-        ),
-      ),
-    );
   }
 
   void _onLocateTap(RunState state) {

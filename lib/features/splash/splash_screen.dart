@@ -16,11 +16,7 @@ class SplashScreen extends StatelessWidget {
       create: (_) => SplashCubit()..start(),
       child: BlocListener<SplashCubit, SplashState>(
         listener: (context, state) {
-          debugPrint('Splash state: $state');
-
           if (state is SplashCompleted) {
-            debugPrint('Navigasi ke Onboarding dimulai');
-
             Navigator.of(context).pushReplacement(
               MaterialPageRoute<void>(builder: (_) => const OnboardingScreen()),
             );
