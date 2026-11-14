@@ -20,10 +20,27 @@ class MyVoucherDetailCubit extends Cubit<MyVoucherDetailState> {
   final RewardsRepository _repository;
   int _requestId = 0;
 
-  Future<void> loadVoucher() async {
+  Future<void> loadVoucher() => _fetch(showLoading: true);
+
+  Future<void> refresh() => _fetch(showLoading: false);
+
+  void clearRefreshError() {
+    if (state.hasRefreshError) {
+      emit(state.copyWith(hasRefreshError: false));
+    }
+  }
+
+  Future<void> _fetch({required bool showLoading}) async {
     final requestId = ++_requestId;
 
-    emit(state.copyWith(status: MyVoucherDetailStatus.loading));
+    if (showLoading) {
+      emit(
+        state.copyWith(
+          status: MyVoucherDetailStatus.loading,
+          hasRefreshError: false,
+        ),
+      );
+    }
 
     final result = await _repository.getVoucher(_voucherId);
 
@@ -34,12 +51,25 @@ class MyVoucherDetailCubit extends Cubit<MyVoucherDetailState> {
 
       if (data != null) {
         emit(
-          state.copyWith(status: MyVoucherDetailStatus.success, voucher: data),
+          state.copyWith(
+            status: MyVoucherDetailStatus.success,
+            voucher: data,
+            hasRefreshError: false,
+          ),
         );
         return;
       }
     }
 
-    emit(state.copyWith(status: MyVoucherDetailStatus.failure));
+    if (showLoading) {
+      emit(
+        state.copyWith(
+          status: MyVoucherDetailStatus.failure,
+          hasRefreshError: false,
+        ),
+      );
+    } else {
+      emit(state.copyWith(hasRefreshError: true));
+    }
   }
 }

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
+import 'package:runca/utility/snackbar_extension.dart';
 
 import 'cubit/placoin_history_cubit.dart';
 import 'cubit/placoin_history_state.dart';
@@ -103,8 +104,16 @@ class _PlaCoinHistoryView extends StatelessWidget {
                   ),
             ),
             Expanded(
-              child: BlocBuilder<PlaCoinHistoryCubit, PlaCoinHistoryState>(
-                builder: (context, state) => _buildBody(context, state),
+              child: BlocListener<PlaCoinHistoryCubit, PlaCoinHistoryState>(
+                listener: (context, state) {
+                  if (state.hasRefreshError) {
+                    context.showErrorSnackbar('Unable to refresh. Try again.');
+                    context.read<PlaCoinHistoryCubit>().clearRefreshError();
+                  }
+                },
+                child: BlocBuilder<PlaCoinHistoryCubit, PlaCoinHistoryState>(
+                  builder: (context, state) => _buildBody(context, state),
+                ),
               ),
             ),
           ],
@@ -123,39 +132,54 @@ class _PlaCoinHistoryView extends StatelessWidget {
     }
 
     if (state.status == PlaCoinHistoryStatus.failure) {
-      return RewardsErrorView(
-        title: 'Unable to load history',
-        onRetry: cubit.loadHistory,
+      return RefreshIndicator(
+        color: AppPalette.bgFillPrimary,
+        onRefresh: cubit.refresh,
+        child: RewardsErrorView(
+          title: 'Unable to load history',
+          onRetry: cubit.loadHistory,
+          physics: const ClampingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+        ),
       );
     }
 
     if (state.transactions.isEmpty) {
-      return PlaCoinHistoryEmptyView(
-        onHowToEarn: () {
-          Navigator.of(context).push(
-            MaterialPageRoute<void>(builder: (_) => const HowToEarnScreen()),
-          );
-        },
+      return RefreshIndicator(
+        color: AppPalette.bgFillPrimary,
+        onRefresh: cubit.refresh,
+        child: PlaCoinHistoryEmptyView(
+          onHowToEarn: () {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const HowToEarnScreen()),
+            );
+          },
+        ),
       );
     }
 
     final groups = _groupByDay(state.transactions).entries.toList();
 
-    return ListView.builder(
-      physics: const ClampingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics(),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-      itemCount: groups.length,
-      itemBuilder: (context, index) {
-        final group = groups[index];
+    return RefreshIndicator(
+      color: AppPalette.bgFillPrimary,
+      onRefresh: cubit.refresh,
+      child: ListView.builder(
+        physics: const ClampingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+        itemCount: groups.length,
+        itemBuilder: (context, index) {
+          final group = groups[index];
 
-        return PlaCoinHistoryGroup(
-          key: ValueKey(group.key),
-          date: group.key,
-          transactions: group.value,
-        );
-      },
+          return PlaCoinHistoryGroup(
+            key: ValueKey(group.key),
+            date: group.key,
+            transactions: group.value,
+          );
+        },
+      ),
     );
   }
 }

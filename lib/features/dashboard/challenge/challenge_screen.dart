@@ -5,6 +5,7 @@ import 'package:runca/ui/color.dart';
 import 'package:runca/ui/shared_view/empty_view.dart';
 import 'package:runca/features/dashboard/activity/widgets/activity_state_view.dart';
 import 'package:runca/features/dashboard/rewards/rewards_screen.dart';
+import 'package:runca/utility/snackbar_extension.dart';
 
 import 'challenge_detail_screen.dart';
 import 'cubit/challenge_cubit.dart';
@@ -36,52 +37,60 @@ class _ChallengeView extends StatelessWidget {
       backgroundColor: AppPalette.bg,
       body: SafeArea(
         bottom: false,
-        child: Column(
-          children: [
-            BlocSelector<ChallengeCubit, ChallengeState, int>(
-              selector: (state) => state.coinBalance,
-              builder: (context, coinBalance) {
-                return ChallengeHeader(
-                  coinBalance: coinBalance,
-                  onCoinTap: () async {
-                    final cubit = context.read<ChallengeCubit>();
-                    await Navigator.of(context).push<void>(
-                      MaterialPageRoute<void>(
-                        builder: (_) => const RewardsScreen(),
-                      ),
-                    );
-                    if (!context.mounted || cubit.isClosed) return;
-                    await cubit.refresh();
-                  },
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            BlocSelector<ChallengeCubit, ChallengeState, ChallengeTab>(
-              selector: (state) => state.selectedTab,
-              builder: (context, selectedTab) {
-                return ChallengeTabs(
-                  selectedTab: selectedTab,
-                  onChanged: context.read<ChallengeCubit>().selectTab,
-                );
-              },
-            ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: BlocBuilder<ChallengeCubit, ChallengeState>(
-                builder: (context, state) {
-                  return IndexedStack(
-                    index: state.selectedTab.index,
-                    children: [
-                      _DiscoverTab(state: state),
-                      ChallengeActiveTab(state: state),
-                      ChallengeHistoryTab(state: state),
-                    ],
+        child: BlocListener<ChallengeCubit, ChallengeState>(
+          listener: (context, state) {
+            if (state.hasRefreshError) {
+              context.showErrorSnackbar('Unable to refresh. Try again.');
+              context.read<ChallengeCubit>().clearRefreshError();
+            }
+          },
+          child: Column(
+            children: [
+              BlocSelector<ChallengeCubit, ChallengeState, int>(
+                selector: (state) => state.coinBalance,
+                builder: (context, coinBalance) {
+                  return ChallengeHeader(
+                    coinBalance: coinBalance,
+                    onCoinTap: () async {
+                      final cubit = context.read<ChallengeCubit>();
+                      await Navigator.of(context).push<void>(
+                        MaterialPageRoute<void>(
+                          builder: (_) => const RewardsScreen(),
+                        ),
+                      );
+                      if (!context.mounted || cubit.isClosed) return;
+                      await cubit.refresh();
+                    },
                   );
                 },
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              BlocSelector<ChallengeCubit, ChallengeState, ChallengeTab>(
+                selector: (state) => state.selectedTab,
+                builder: (context, selectedTab) {
+                  return ChallengeTabs(
+                    selectedTab: selectedTab,
+                    onChanged: context.read<ChallengeCubit>().selectTab,
+                  );
+                },
+              ),
+              const SizedBox(height: 24),
+              Expanded(
+                child: BlocBuilder<ChallengeCubit, ChallengeState>(
+                  builder: (context, state) {
+                    return IndexedStack(
+                      index: state.selectedTab.index,
+                      children: [
+                        _DiscoverTab(state: state),
+                        ChallengeActiveTab(state: state),
+                        ChallengeHistoryTab(state: state),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -105,73 +114,97 @@ class _DiscoverTab extends StatelessWidget {
     }
 
     if (state.status == ChallengeStatus.failure) {
-      return ActivityStateView(
-        leading: const DecoratedBox(
-          decoration: BoxDecoration(
-            color: AppPalette.bgSurfacePrimary,
-            shape: BoxShape.circle,
-          ),
-          child: SizedBox(
-            width: 104,
-            height: 104,
-            child: Icon(
-              Icons.cloud_off_outlined,
-              size: 44,
-              color: AppPalette.bgFillPrimary,
-            ),
-          ),
+      return RefreshIndicator(
+        color: AppPalette.bgFillPrimary,
+        onRefresh: cubit.refresh,
+        notificationPredicate: (notification) => notification.depth == 0,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const ClampingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Center(
+                  child: ActivityStateView(
+                    leading: const DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: AppPalette.bgSurfacePrimary,
+                        shape: BoxShape.circle,
+                      ),
+                      child: SizedBox(
+                        width: 104,
+                        height: 104,
+                        child: Icon(
+                          Icons.cloud_off_outlined,
+                          size: 44,
+                          color: AppPalette.bgFillPrimary,
+                        ),
+                      ),
+                    ),
+                    title: 'Unable to load challenges',
+                    message:
+                        'We couldn’t load challenges. Check your connection and try again.',
+                    actionLabel: 'Try Again',
+                    onAction: cubit.loadChallenges,
+                  ),
+                ),
+              ),
+            );
+          },
         ),
-        title: 'Unable to load challenges',
-        message:
-            'We couldn’t load challenges. Check your connection and try again.',
-        actionLabel: 'Try Again',
-        onAction: cubit.loadChallenges,
       );
     }
 
-    return CustomScrollView(
-      key: const PageStorageKey<String>('challenge_discover_scroll'),
-      physics: const ClampingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics(),
-      ),
-      slivers: [
-        SliverToBoxAdapter(
-          child: ChallengeFilterChips(
-            selectedFilter: state.selectedFilter,
-            onChanged: cubit.selectFilter,
-          ),
+    return RefreshIndicator(
+      color: AppPalette.bgFillPrimary,
+      onRefresh: cubit.refresh,
+      notificationPredicate: (notification) => notification.depth == 0,
+      child: CustomScrollView(
+        key: const PageStorageKey<String>('challenge_discover_scroll'),
+        physics: const ClampingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
         ),
-        const SliverToBoxAdapter(child: SizedBox(height: 14)),
-        if (challenges.isEmpty)
-          const SliverFillRemaining(
-            hasScrollBody: false,
-            child: EmptyView(message: 'No challenges found.'),
-          )
-        else
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-            sliver: SliverList.separated(
-              itemCount: challenges.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 10),
-              itemBuilder: (context, index) {
-                final challenge = challenges[index];
-
-                return ChallengeItem(
-                  key: ValueKey(challenge.id),
-                  challenge: challenge,
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) =>
-                            ChallengeDetailScreen(challengeId: challenge.id),
-                      ),
-                    );
-                  },
-                );
-              },
+        slivers: [
+          SliverToBoxAdapter(
+            child: ChallengeFilterChips(
+              selectedFilter: state.selectedFilter,
+              onChanged: cubit.selectFilter,
             ),
           ),
-      ],
+          const SliverToBoxAdapter(child: SizedBox(height: 14)),
+          if (challenges.isEmpty)
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: EmptyView(message: 'No challenges found.'),
+            )
+          else
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+              sliver: SliverList.separated(
+                itemCount: challenges.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                itemBuilder: (context, index) {
+                  final challenge = challenges[index];
+
+                  return ChallengeItem(
+                    key: ValueKey(challenge.id),
+                    challenge: challenge,
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) =>
+                              ChallengeDetailScreen(challengeId: challenge.id),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
     );
   }
 }

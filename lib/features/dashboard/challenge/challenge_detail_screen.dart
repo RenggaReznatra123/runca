@@ -5,6 +5,7 @@ import 'package:runca/features/dashboard/activity/widgets/activity_state_view.da
 import 'package:runca/features/dashboard/challenge/cubit/challenge_detail_cubit.dart';
 import 'package:runca/features/dashboard/challenge/cubit/challenge_detail_state.dart';
 import 'package:runca/ui/color.dart';
+import 'package:runca/utility/snackbar_extension.dart';
 
 import 'widgets/challenge_detail_loaded_view.dart';
 
@@ -37,11 +38,14 @@ class _ChallengeDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ChallengeDetailCubit, ChallengeDetailState>(
+    final content = BlocBuilder<ChallengeDetailCubit, ChallengeDetailState>(
       builder: (context, state) {
+        final cubit = context.read<ChallengeDetailCubit>();
+
         if (state.status == ChallengeDetailStatus.failure) {
           return _DetailFailure(
-            onRetry: context.read<ChallengeDetailCubit>().load,
+            onRetry: cubit.load,
+            onRefresh: fromRun ? null : cubit.refresh,
           );
         }
 
@@ -50,8 +54,24 @@ class _ChallengeDetailView extends StatelessWidget {
           return const _DetailLoading();
         }
 
-        return ChallengeDetailLoadedView(challenge: detail, fromRun: fromRun);
+        return ChallengeDetailLoadedView(
+          challenge: detail,
+          fromRun: fromRun,
+          onRefresh: fromRun ? null : cubit.refresh,
+        );
       },
+    );
+
+    if (fromRun) return content;
+
+    return BlocListener<ChallengeDetailCubit, ChallengeDetailState>(
+      listener: (context, state) {
+        if (state.hasRefreshError) {
+          context.showErrorSnackbar('Unable to refresh. Try again.');
+          context.read<ChallengeDetailCubit>().clearRefreshError();
+        }
+      },
+      child: content,
     );
   }
 }
@@ -81,12 +101,36 @@ class _DetailLoading extends StatelessWidget {
 }
 
 class _DetailFailure extends StatelessWidget {
-  const _DetailFailure({required this.onRetry});
+  const _DetailFailure({required this.onRetry, this.onRefresh});
 
   final VoidCallback onRetry;
+  final Future<void> Function()? onRefresh;
 
   @override
   Widget build(BuildContext context) {
+    final errorContent = ActivityStateView(
+      leading: const DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppPalette.bgSurfacePrimary,
+          shape: BoxShape.circle,
+        ),
+        child: SizedBox(
+          width: 104,
+          height: 104,
+          child: Icon(
+            Icons.cloud_off_outlined,
+            size: 44,
+            color: AppPalette.bgFillPrimary,
+          ),
+        ),
+      ),
+      title: 'Unable to load challenge',
+      message:
+          'We couldn’t load this challenge. Check your connection and try again.',
+      actionLabel: 'Try Again',
+      onAction: onRetry,
+    );
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark.copyWith(
         statusBarColor: AppPalette.transparent,
@@ -95,30 +139,32 @@ class _DetailFailure extends StatelessWidget {
         backgroundColor: AppPalette.baseWhite,
         body: Stack(
           children: [
-            Center(
-              child: ActivityStateView(
-                leading: const DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: AppPalette.bgSurfacePrimary,
-                    shape: BoxShape.circle,
-                  ),
-                  child: SizedBox(
-                    width: 104,
-                    height: 104,
-                    child: Icon(
-                      Icons.cloud_off_outlined,
-                      size: 44,
-                      color: AppPalette.bgFillPrimary,
-                    ),
+            if (onRefresh == null)
+              Center(child: errorContent)
+            else
+              Positioned.fill(
+                child: RefreshIndicator(
+                  color: AppPalette.bgFillPrimary,
+                  onRefresh: onRefresh!,
+                  notificationPredicate: (notification) =>
+                      notification.depth == 0,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        physics: const ClampingScrollPhysics(
+                          parent: AlwaysScrollableScrollPhysics(),
+                        ),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
+                          ),
+                          child: Center(child: errorContent),
+                        ),
+                      );
+                    },
                   ),
                 ),
-                title: 'Unable to load challenge',
-                message:
-                    'We couldn’t load this challenge. Check your connection and try again.',
-                actionLabel: 'Try Again',
-                onAction: onRetry,
               ),
-            ),
             _DetailBackButton(onBack: () => Navigator.of(context).maybePop()),
           ],
         ),

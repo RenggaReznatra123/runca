@@ -11,6 +11,7 @@ class ProgressState {
     this.selectedFilter = ActivityFilter.all,
     this.stats,
     this.records,
+    this.hasRefreshError = false,
   });
 
   final DateTime selectedDate;
@@ -19,6 +20,7 @@ class ProgressState {
   final ActivityFilter selectedFilter;
   final ProgressStats? stats;
   final PersonalRecords? records;
+  final bool hasRefreshError;
 
   ProgressState copyWith({
     DateTime? selectedDate,
@@ -27,6 +29,7 @@ class ProgressState {
     ActivityFilter? selectedFilter,
     ProgressStats? stats,
     PersonalRecords? records,
+    bool? hasRefreshError,
   }) {
     return ProgressState(
       selectedDate: selectedDate ?? this.selectedDate,
@@ -35,6 +38,7 @@ class ProgressState {
       selectedFilter: selectedFilter ?? this.selectedFilter,
       stats: stats ?? this.stats,
       records: records ?? this.records,
+      hasRefreshError: hasRefreshError ?? this.hasRefreshError,
     );
   }
 }

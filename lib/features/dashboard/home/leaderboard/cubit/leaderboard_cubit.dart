@@ -8,8 +8,7 @@ import 'leaderboard_state.dart';
 
 class LeaderboardCubit extends Cubit<LeaderboardState> {
   LeaderboardCubit({LeaderboardRepository? repository})
-    : _repository =
-          repository ?? serviceLocator.get<LeaderboardRepository>(),
+    : _repository = repository ?? serviceLocator.get<LeaderboardRepository>(),
       super(const LeaderboardState()) {
     loadLeaderboard();
   }
@@ -19,15 +18,33 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
 
   Future<void> loadLeaderboard() => _fetch(showLoading: true);
 
+  Future<void> refresh() => _fetch(showLoading: false, isRefresh: true);
+
+  void clearRefreshError() {
+    if (state.hasRefreshError) {
+      emit(state.copyWith(hasRefreshError: false));
+    }
+  }
+
   void selectPeriod(LeaderboardPeriod period) {
     if (period == state.selectedPeriod) return;
     emit(state.copyWith(selectedPeriod: period));
     _fetch(showLoading: false);
   }
 
-  Future<void> _fetch({required bool showLoading}) async {
+  Future<void> _fetch({
+    required bool showLoading,
+    bool isRefresh = false,
+  }) async {
     final requestId = ++_requestId;
-    if (showLoading) emit(state.copyWith(status: LeaderboardStatus.loading));
+    if (showLoading) {
+      emit(
+        state.copyWith(
+          status: LeaderboardStatus.loading,
+          hasRefreshError: false,
+        ),
+      );
+    }
 
     final result = await _repository.getLeaderboard(
       period: state.selectedPeriod,
@@ -41,10 +58,18 @@ class LeaderboardCubit extends Cubit<LeaderboardState> {
           status: LeaderboardStatus.success,
           runners: data?.runners ?? const [],
           totalRunners: data?.totalRunners ?? 0,
+          hasRefreshError: false,
         ),
       );
+    } else if (isRefresh) {
+      emit(state.copyWith(hasRefreshError: true));
     } else {
-      emit(state.copyWith(status: LeaderboardStatus.failure));
+      emit(
+        state.copyWith(
+          status: LeaderboardStatus.failure,
+          hasRefreshError: false,
+        ),
+      );
     }
   }
 }

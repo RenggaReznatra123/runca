@@ -19,8 +19,21 @@ class MyVouchersCubit extends Cubit<MyVouchersState> {
 
   /// Muat awal dan Try Again: layar menampilkan loading.
   Future<void> loadVouchers() async {
-    emit(state.copyWith(status: MyVouchersLoadStatus.loading));
+    emit(
+      state.copyWith(
+        status: MyVouchersLoadStatus.loading,
+        hasRefreshError: false,
+      ),
+    );
     await _fetch();
+  }
+
+  Future<void> refresh() => _fetch(isRefresh: true);
+
+  void clearRefreshError() {
+    if (state.hasRefreshError) {
+      emit(state.copyWith(hasRefreshError: false));
+    }
   }
 
   /// Ganti tab: daftar lama tetap tampil sampai hasil baru datang.
@@ -31,7 +44,7 @@ class MyVouchersCubit extends Cubit<MyVouchersState> {
     await _fetch();
   }
 
-  Future<void> _fetch() async {
+  Future<void> _fetch({bool isRefresh = false}) async {
     final requestId = ++_requestId;
 
     final result = await _repository.getMyVouchers(status: state.filter);
@@ -43,12 +56,25 @@ class MyVouchersCubit extends Cubit<MyVouchersState> {
 
       if (data != null) {
         emit(
-          state.copyWith(status: MyVouchersLoadStatus.success, vouchers: data),
+          state.copyWith(
+            status: MyVouchersLoadStatus.success,
+            vouchers: data,
+            hasRefreshError: false,
+          ),
         );
         return;
       }
     }
 
-    emit(state.copyWith(status: MyVouchersLoadStatus.failure));
+    if (isRefresh) {
+      emit(state.copyWith(hasRefreshError: true));
+    } else {
+      emit(
+        state.copyWith(
+          status: MyVouchersLoadStatus.failure,
+          hasRefreshError: false,
+        ),
+      );
+    }
   }
 }

@@ -1,13 +1,5 @@
 /// Pilihan gender di Edit Profile.
-enum ProfileGender {
-  male('Male'),
-  female('Female'),
-  preferNotToSay('Prefer not to say');
-
-  const ProfileGender(this.label);
-
-  final String label;
-}
+enum ProfileGender { male, female, preferNotToSay }
 
 /// Data profil yang bisa diedit. Email hanya tampil, tidak bisa diubah.
 class EditProfileData {
@@ -24,14 +16,14 @@ class EditProfileData {
 
   final String name;
   final String email;
-  final ProfileGender gender;
-  final DateTime birthDate;
+  final ProfileGender? gender;
+  final DateTime? birthDate;
 
   /// Tinggi dalam cm.
-  final int heightCm;
+  final int? heightCm;
 
   /// Berat dalam kg.
-  final int weightKg;
+  final int? weightKg;
   final String location;
 
   /// URL atau path aset gambar.
@@ -41,20 +33,26 @@ class EditProfileData {
     String? name,
     String? email,
     ProfileGender? gender,
+    bool clearGender = false,
     DateTime? birthDate,
+    bool clearBirthDate = false,
     int? heightCm,
+    bool clearHeightCm = false,
     int? weightKg,
+    bool clearWeightKg = false,
     String? location,
+    String? avatarUrl,
+    bool clearAvatarUrl = false,
   }) {
     return EditProfileData(
       name: name ?? this.name,
       email: email ?? this.email,
-      gender: gender ?? this.gender,
-      birthDate: birthDate ?? this.birthDate,
-      heightCm: heightCm ?? this.heightCm,
-      weightKg: weightKg ?? this.weightKg,
+      gender: clearGender ? null : (gender ?? this.gender),
+      birthDate: clearBirthDate ? null : (birthDate ?? this.birthDate),
+      heightCm: clearHeightCm ? null : (heightCm ?? this.heightCm),
+      weightKg: clearWeightKg ? null : (weightKg ?? this.weightKg),
       location: location ?? this.location,
-      avatarUrl: avatarUrl,
+      avatarUrl: clearAvatarUrl ? null : (avatarUrl ?? this.avatarUrl),
     );
   }
 }

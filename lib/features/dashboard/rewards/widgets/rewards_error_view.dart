@@ -11,38 +11,52 @@ class RewardsErrorView extends StatelessWidget {
     super.key,
     required this.title,
     required this.onRetry,
+    this.physics,
   });
 
   final String title;
   final VoidCallback onRetry;
+  final ScrollPhysics? physics;
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: SingleChildScrollView(
-        child: ActivityStateView(
-          leading: const DecoratedBox(
-            decoration: BoxDecoration(
-              color: AppPalette.bgSurfacePrimary,
-              shape: BoxShape.circle,
-            ),
-            child: SizedBox(
-              width: 104,
-              height: 104,
-              child: Icon(
-                Icons.cloud_off_outlined,
-                size: 44,
-                color: AppPalette.bgFillPrimary,
-              ),
-            ),
+    final errorContent = ActivityStateView(
+      leading: const DecoratedBox(
+        decoration: BoxDecoration(
+          color: AppPalette.bgSurfacePrimary,
+          shape: BoxShape.circle,
+        ),
+        child: SizedBox(
+          width: 104,
+          height: 104,
+          child: Icon(
+            Icons.cloud_off_outlined,
+            size: 44,
+            color: AppPalette.bgFillPrimary,
           ),
-          title: title,
-          message:
-              'We couldn\u2019t load this. Check your connection and try again.',
-          actionLabel: 'Try Again',
-          onAction: onRetry,
         ),
       ),
+      title: title,
+      message:
+          'We couldn\u2019t load this. Check your connection and try again.',
+      actionLabel: 'Try Again',
+      onAction: onRetry,
+    );
+
+    if (physics == null) {
+      return Center(child: SingleChildScrollView(child: errorContent));
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: physics,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: Center(child: errorContent),
+          ),
+        );
+      },
     );
   }
 }

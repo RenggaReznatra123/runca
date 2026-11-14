@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
+import 'package:runca/utility/snackbar_extension.dart';
 
 import 'cubit/my_vouchers_cubit.dart';
 import 'cubit/my_vouchers_state.dart';
@@ -95,8 +96,16 @@ class _MyVouchersView extends StatelessWidget {
                   ),
             ),
             Expanded(
-              child: BlocBuilder<MyVouchersCubit, MyVouchersState>(
-                builder: (context, state) => _buildBody(context, state),
+              child: BlocListener<MyVouchersCubit, MyVouchersState>(
+                listener: (context, state) {
+                  if (state.hasRefreshError) {
+                    context.showErrorSnackbar('Unable to refresh. Try again.');
+                    context.read<MyVouchersCubit>().clearRefreshError();
+                  }
+                },
+                child: BlocBuilder<MyVouchersCubit, MyVouchersState>(
+                  builder: (context, state) => _buildBody(context, state),
+                ),
               ),
             ),
           ],
@@ -115,16 +124,27 @@ class _MyVouchersView extends StatelessWidget {
     }
 
     if (state.status == MyVouchersLoadStatus.failure) {
-      return RewardsErrorView(
-        title: 'Unable to load vouchers',
-        onRetry: cubit.loadVouchers,
+      return RefreshIndicator(
+        color: AppPalette.bgFillPrimary,
+        onRefresh: cubit.refresh,
+        child: RewardsErrorView(
+          title: 'Unable to load vouchers',
+          onRetry: cubit.loadVouchers,
+          physics: const ClampingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+        ),
       );
     }
 
     if (state.vouchers.isEmpty) {
-      return MyVouchersEmptyView(
-        status: state.filter,
-        onExploreRewards: onExploreRewards,
+      return RefreshIndicator(
+        color: AppPalette.bgFillPrimary,
+        onRefresh: cubit.refresh,
+        child: MyVouchersEmptyView(
+          status: state.filter,
+          onExploreRewards: onExploreRewards,
+        ),
       );
     }
 
@@ -132,31 +152,35 @@ class _MyVouchersView extends StatelessWidget {
     final showBanner = state.filter == VoucherStatus.active;
     final itemCount = state.vouchers.length + (showBanner ? 1 : 0);
 
-    return ListView.builder(
-      physics: const ClampingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics(),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-      itemCount: itemCount,
-      itemBuilder: (context, index) {
-        if (index >= state.vouchers.length) {
-          return const Padding(
-            padding: EdgeInsets.only(top: 8),
-            child: VoucherCashierBanner(),
+    return RefreshIndicator(
+      color: AppPalette.bgFillPrimary,
+      onRefresh: cubit.refresh,
+      child: ListView.builder(
+        physics: const ClampingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+        itemCount: itemCount,
+        itemBuilder: (context, index) {
+          if (index >= state.vouchers.length) {
+            return const Padding(
+              padding: EdgeInsets.only(top: 8),
+              child: VoucherCashierBanner(),
+            );
+          }
+
+          final voucher = state.vouchers[index];
+
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: MyVoucherCard(
+              key: ValueKey(voucher.id),
+              voucher: voucher,
+              onTap: () => _openDetail(context, voucher),
+            ),
           );
-        }
-
-        final voucher = state.vouchers[index];
-
-        return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: MyVoucherCard(
-            key: ValueKey(voucher.id),
-            voucher: voucher,
-            onTap: () => _openDetail(context, voucher),
-          ),
-        );
-      },
+        },
+      ),
     );
   }
 }

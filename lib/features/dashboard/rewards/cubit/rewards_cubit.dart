@@ -23,7 +23,13 @@ class RewardsCubit extends Cubit<RewardsState> {
   Future<void> loadRewards() => _fetch(showLoading: true);
 
   /// Ambil ulang tanpa loading, contoh: setelah redeem.
-  Future<void> refresh() => _fetch(showLoading: false);
+  Future<void> refresh() => _fetch(showLoading: false, isRefresh: true);
+
+  void clearRefreshError() {
+    if (state.hasRefreshError) {
+      emit(state.copyWith(hasRefreshError: false));
+    }
+  }
 
   void selectFilter(RewardFilter filter) {
     if (filter == state.selectedFilter) return;
@@ -32,12 +38,17 @@ class RewardsCubit extends Cubit<RewardsState> {
     _fetch(showLoading: false);
   }
 
-  Future<void> _fetch({required bool showLoading}) async {
+  Future<void> _fetch({
+    required bool showLoading,
+    bool isRefresh = false,
+  }) async {
     final requestId = ++_requestId;
     final category = state.selectedFilter.category;
 
     if (showLoading) {
-      emit(state.copyWith(status: RewardsStatus.loading));
+      emit(
+        state.copyWith(status: RewardsStatus.loading, hasRefreshError: false),
+      );
     }
 
     final result = await _repository.getRewards(category: category);
@@ -53,12 +64,19 @@ class RewardsCubit extends Cubit<RewardsState> {
             status: RewardsStatus.success,
             coinBalance: data.coinBalance,
             rewards: data.rewards,
+            hasRefreshError: false,
           ),
         );
         return;
       }
     }
 
-    emit(state.copyWith(status: RewardsStatus.failure));
+    if (isRefresh) {
+      emit(state.copyWith(hasRefreshError: true));
+    } else {
+      emit(
+        state.copyWith(status: RewardsStatus.failure, hasRefreshError: false),
+      );
+    }
   }
 }

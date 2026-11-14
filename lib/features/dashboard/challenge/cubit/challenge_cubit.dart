@@ -23,7 +23,22 @@ class ChallengeCubit extends Cubit<ChallengeState> {
 
   Future<void> loadChallenges() => _fetch(showLoading: true, withBalance: true);
 
-  Future<void> refresh() => _fetch(showLoading: false, withBalance: true);
+  Future<void> refresh() {
+    switch (state.selectedTab) {
+      case ChallengeTab.discover:
+        return _fetch(showLoading: false, withBalance: true, isRefresh: true);
+      case ChallengeTab.active:
+        return _refreshActive();
+      case ChallengeTab.history:
+        return _refreshHistory();
+    }
+  }
+
+  void clearRefreshError() {
+    if (state.hasRefreshError) {
+      emit(state.copyWith(hasRefreshError: false));
+    }
+  }
 
   void selectTab(ChallengeTab tab) {
     if (tab == state.selectedTab) return;
@@ -63,17 +78,27 @@ class ChallengeCubit extends Cubit<ChallengeState> {
 
   /// Muat awal dan Try Again di tab Active: layar menampilkan loading.
   Future<void> loadActive() async {
-    emit(state.copyWith(activeStatus: ChallengeStatus.loading));
+    emit(
+      state.copyWith(
+        activeStatus: ChallengeStatus.loading,
+        hasRefreshError: false,
+      ),
+    );
     await _fetchActive();
   }
 
   /// Muat awal dan Try Again di tab History: layar menampilkan loading.
   Future<void> loadHistory() async {
-    emit(state.copyWith(historyStatus: ChallengeStatus.loading));
+    emit(
+      state.copyWith(
+        historyStatus: ChallengeStatus.loading,
+        hasRefreshError: false,
+      ),
+    );
     await _fetchHistory();
   }
 
-  Future<void> _fetchActive() async {
+  Future<void> _fetchActive({bool isRefresh = false}) async {
     final requestId = ++_activeRequestId;
 
     final result = await _repository.getChallenges(
@@ -86,14 +111,22 @@ class ChallengeCubit extends Cubit<ChallengeState> {
         state.copyWith(
           activeStatus: ChallengeStatus.success,
           activeChallenges: result.data ?? const [],
+          hasRefreshError: false,
         ),
       );
+    } else if (isRefresh) {
+      emit(state.copyWith(hasRefreshError: true));
     } else {
-      emit(state.copyWith(activeStatus: ChallengeStatus.failure));
+      emit(
+        state.copyWith(
+          activeStatus: ChallengeStatus.failure,
+          hasRefreshError: false,
+        ),
+      );
     }
   }
 
-  Future<void> _fetchHistory() async {
+  Future<void> _fetchHistory({bool isRefresh = false}) async {
     final requestId = ++_historyRequestId;
 
     final result = await _repository.getChallenges(
@@ -107,19 +140,81 @@ class ChallengeCubit extends Cubit<ChallengeState> {
         state.copyWith(
           historyStatus: ChallengeStatus.success,
           historyChallenges: result.data ?? const [],
+          hasRefreshError: false,
+        ),
+      );
+    } else if (isRefresh) {
+      emit(state.copyWith(hasRefreshError: true));
+    } else {
+      emit(
+        state.copyWith(
+          historyStatus: ChallengeStatus.failure,
+          hasRefreshError: false,
+        ),
+      );
+    }
+  }
+
+  Future<void> _refreshActive() async {
+    final requestId = ++_activeRequestId;
+    final (challengeResult, balanceResult) = await (
+      _repository.getChallenges(kind: ChallengeListKind.active),
+      _repository.getCoinBalance(),
+    ).wait;
+    if (isClosed || requestId != _activeRequestId) return;
+
+    if (challengeResult is DataStateSuccess<List<ChallengeModel>> &&
+        balanceResult is DataStateSuccess<int>) {
+      emit(
+        state.copyWith(
+          activeStatus: ChallengeStatus.success,
+          activeChallenges: challengeResult.data ?? const [],
+          coinBalance: balanceResult.data ?? state.coinBalance,
+          hasRefreshError: false,
         ),
       );
     } else {
-      emit(state.copyWith(historyStatus: ChallengeStatus.failure));
+      emit(state.copyWith(hasRefreshError: true));
+    }
+  }
+
+  Future<void> _refreshHistory() async {
+    final requestId = ++_historyRequestId;
+    final (challengeResult, balanceResult) = await (
+      _repository.getChallenges(
+        type: state.historyFilter.type,
+        kind: ChallengeListKind.history,
+      ),
+      _repository.getCoinBalance(),
+    ).wait;
+    if (isClosed || requestId != _historyRequestId) return;
+
+    if (challengeResult is DataStateSuccess<List<ChallengeModel>> &&
+        balanceResult is DataStateSuccess<int>) {
+      emit(
+        state.copyWith(
+          historyStatus: ChallengeStatus.success,
+          historyChallenges: challengeResult.data ?? const [],
+          coinBalance: balanceResult.data ?? state.coinBalance,
+          hasRefreshError: false,
+        ),
+      );
+    } else {
+      emit(state.copyWith(hasRefreshError: true));
     }
   }
 
   Future<void> _fetch({
     required bool showLoading,
     bool withBalance = false,
+    bool isRefresh = false,
   }) async {
     final requestId = ++_requestId;
-    if (showLoading) emit(state.copyWith(status: ChallengeStatus.loading));
+    if (showLoading) {
+      emit(
+        state.copyWith(status: ChallengeStatus.loading, hasRefreshError: false),
+      );
+    }
 
     if (withBalance) {
       final (challengeResult, balanceResult) = await (
@@ -135,10 +230,20 @@ class ChallengeCubit extends Cubit<ChallengeState> {
             status: ChallengeStatus.success,
             challenges: challengeResult.data ?? const [],
             coinBalance: balanceResult.data ?? 0,
+            hasRefreshError: false,
           ),
         );
       } else {
-        emit(state.copyWith(status: ChallengeStatus.failure));
+        if (isRefresh) {
+          emit(state.copyWith(hasRefreshError: true));
+        } else {
+          emit(
+            state.copyWith(
+              status: ChallengeStatus.failure,
+              hasRefreshError: false,
+            ),
+          );
+        }
       }
       return;
     }
@@ -153,10 +258,20 @@ class ChallengeCubit extends Cubit<ChallengeState> {
         state.copyWith(
           status: ChallengeStatus.success,
           challenges: result.data ?? const [],
+          hasRefreshError: false,
         ),
       );
     } else {
-      emit(state.copyWith(status: ChallengeStatus.failure));
+      if (isRefresh) {
+        emit(state.copyWith(hasRefreshError: true));
+      } else {
+        emit(
+          state.copyWith(
+            status: ChallengeStatus.failure,
+            hasRefreshError: false,
+          ),
+        );
+      }
     }
   }
 }

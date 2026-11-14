@@ -19,9 +19,29 @@ class ChallengeDetailCubit extends Cubit<ChallengeDetailState> {
   final ChallengeRepository _repository;
   int _requestId = 0;
 
-  Future<void> load() async {
+  Future<void> load() => _fetch(showLoading: true);
+
+  Future<void> refresh() => _fetch(showLoading: false, isRefresh: true);
+
+  void clearRefreshError() {
+    if (state.hasRefreshError) {
+      emit(state.copyWith(hasRefreshError: false));
+    }
+  }
+
+  Future<void> _fetch({
+    required bool showLoading,
+    bool isRefresh = false,
+  }) async {
     final requestId = ++_requestId;
-    emit(state.copyWith(status: ChallengeDetailStatus.loading));
+    if (showLoading) {
+      emit(
+        state.copyWith(
+          status: ChallengeDetailStatus.loading,
+          hasRefreshError: false,
+        ),
+      );
+    }
 
     final result = await _repository.getChallengeDetail(challengeId);
     if (isClosed || requestId != _requestId) return;
@@ -31,10 +51,18 @@ class ChallengeDetailCubit extends Cubit<ChallengeDetailState> {
         state.copyWith(
           status: ChallengeDetailStatus.success,
           detail: result.data,
+          hasRefreshError: false,
         ),
       );
+    } else if (isRefresh) {
+      emit(state.copyWith(hasRefreshError: true));
     } else {
-      emit(state.copyWith(status: ChallengeDetailStatus.failure));
+      emit(
+        state.copyWith(
+          status: ChallengeDetailStatus.failure,
+          hasRefreshError: false,
+        ),
+      );
     }
   }
 }

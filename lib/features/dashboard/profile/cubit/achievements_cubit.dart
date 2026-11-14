@@ -21,8 +21,21 @@ class AchievementsCubit extends Cubit<AchievementsState> {
 
   /// Muat awal dan Try Again: layar menampilkan loading.
   Future<void> loadAchievements() async {
-    emit(state.copyWith(status: AchievementsLoadStatus.loading));
+    emit(
+      state.copyWith(
+        status: AchievementsLoadStatus.loading,
+        hasRefreshError: false,
+      ),
+    );
     await _fetch();
+  }
+
+  Future<void> refresh() => _fetch(isRefresh: true);
+
+  void clearRefreshError() {
+    if (state.hasRefreshError) {
+      emit(state.copyWith(hasRefreshError: false));
+    }
   }
 
   /// Ganti chip: daftar lama tetap tampil sampai hasil baru datang.
@@ -33,7 +46,7 @@ class AchievementsCubit extends Cubit<AchievementsState> {
     await _fetch();
   }
 
-  Future<void> _fetch() async {
+  Future<void> _fetch({bool isRefresh = false}) async {
     final requestId = ++_requestId;
 
     final result = await _repository.getAchievements(filter: state.filter);
@@ -48,12 +61,22 @@ class AchievementsCubit extends Cubit<AchievementsState> {
           state.copyWith(
             status: AchievementsLoadStatus.success,
             achievements: data,
+            hasRefreshError: false,
           ),
         );
         return;
       }
     }
 
-    emit(state.copyWith(status: AchievementsLoadStatus.failure));
+    if (isRefresh) {
+      emit(state.copyWith(hasRefreshError: true));
+    } else {
+      emit(
+        state.copyWith(
+          status: AchievementsLoadStatus.failure,
+          hasRefreshError: false,
+        ),
+      );
+    }
   }
 }

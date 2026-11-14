@@ -1,31 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:runca/ui/color.dart';
+import 'package:runca/ui/shared_view/app_image.dart';
 import 'package:runca/features/dashboard/cubit/dashboard_cubit.dart';
 import 'package:runca/features/dashboard/home/leaderboard/leaderboard_screen.dart';
 import 'package:runca/features/dashboard/home/notifications/notifications_screen.dart';
 import 'package:runca/utility/format_utils.dart';
 
 class HomeHeader extends StatelessWidget {
-  const HomeHeader({super.key, required this.name});
+  const HomeHeader({super.key, required this.name, this.avatarUrl});
 
   final String name;
+  final String? avatarUrl;
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
+        SizedBox(
           width: 48,
           height: 48,
-          decoration: const BoxDecoration(
-            color: AppPalette.bgSurfaceNeutral,
-            shape: BoxShape.circle,
-          ),
-          child: const Icon(
-            Icons.person_rounded,
-            color: AppPalette.iconNeutralSecondary,
-            size: 30,
+          child: ClipOval(
+            child: AppImage(
+              path: avatarUrl,
+              width: 48,
+              height: 48,
+              placeholder: Container(
+                decoration: const BoxDecoration(
+                  color: AppPalette.bgSurfaceNeutral,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person_rounded,
+                  color: AppPalette.iconNeutralSecondary,
+                  size: 30,
+                ),
+              ),
+            ),
           ),
         ),
         const SizedBox(width: 12),

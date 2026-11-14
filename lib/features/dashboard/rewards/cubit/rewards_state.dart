@@ -22,11 +22,13 @@ class RewardsState {
     this.selectedFilter = RewardFilter.all,
     this.coinBalance = 0,
     this.rewards = const [],
+    this.hasRefreshError = false,
   });
 
   final RewardsStatus status;
   final RewardFilter selectedFilter;
   final int coinBalance;
+  final bool hasRefreshError;
 
   /// Hasil dari repository, sudah terfilter.
   final List<RewardModel> rewards;
@@ -36,12 +38,14 @@ class RewardsState {
     RewardFilter? selectedFilter,
     int? coinBalance,
     List<RewardModel>? rewards,
+    bool? hasRefreshError,
   }) {
     return RewardsState(
       status: status ?? this.status,
       selectedFilter: selectedFilter ?? this.selectedFilter,
       coinBalance: coinBalance ?? this.coinBalance,
       rewards: rewards ?? this.rewards,
+      hasRefreshError: hasRefreshError ?? this.hasRefreshError,
     );
   }
 }

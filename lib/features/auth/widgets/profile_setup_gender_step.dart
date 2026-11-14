@@ -1,7 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:runca/features/dashboard/profile/models/edit_profile_model.dart';
 import 'package:runca/ui/color.dart';
 
 import 'profile_setup_heading.dart';
+
+extension ProfileSetupGenderPresentation on ProfileGender {
+  String get setupLabel => switch (this) {
+    ProfileGender.male => 'Man',
+    ProfileGender.female => 'Woman',
+    ProfileGender.preferNotToSay => 'Prefer not to say',
+  };
+}
 
 class ProfileSetupGenderStep extends StatelessWidget {
   const ProfileSetupGenderStep({
@@ -10,12 +19,12 @@ class ProfileSetupGenderStep extends StatelessWidget {
     super.key,
   });
 
-  final String? selectedGender;
-  final ValueChanged<String> onSelected;
+  final ProfileGender? selectedGender;
+  final ValueChanged<ProfileGender> onSelected;
 
   @override
   Widget build(BuildContext context) {
-    const genders = ['Man', 'Woman', 'Prefer not to say'];
+    const genders = ProfileGender.values;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -46,7 +55,7 @@ class ProfileSetupGenderStep extends StatelessWidget {
                   ),
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    gender,
+                    gender.setupLabel,
                     style: TextStyle(
                       fontSize: 16,
                       color: selected

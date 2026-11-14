@@ -33,6 +33,7 @@ class ChallengeActiveTab extends StatelessWidget {
           'Ready for a new goal? Discover a challenge and start making every '
           'run count.',
       onRetry: cubit.loadActive,
+      onRefresh: cubit.refresh,
       onExplore: () => cubit.selectTab(ChallengeTab.discover),
     );
   }
@@ -58,6 +59,7 @@ class ChallengeHistoryTab extends StatelessWidget {
           'Your running achievements will appear here. Complete your first '
           'challenge to start building your history.',
       onRetry: cubit.loadHistory,
+      onRefresh: cubit.refresh,
       onExplore: () => cubit.selectTab(ChallengeTab.discover),
       filterChips: ChallengeFilterChips(
         selectedFilter: state.historyFilter,
@@ -76,6 +78,7 @@ class _ChallengeStatusTab extends StatelessWidget {
     required this.emptyTitle,
     required this.emptyMessage,
     required this.onRetry,
+    required this.onRefresh,
     required this.onExplore,
     this.filterChips,
   });
@@ -87,6 +90,7 @@ class _ChallengeStatusTab extends StatelessWidget {
   final String emptyTitle;
   final String emptyMessage;
   final VoidCallback onRetry;
+  final Future<void> Function() onRefresh;
   final VoidCallback onExplore;
   final Widget? filterChips;
 
@@ -111,47 +115,65 @@ class _ChallengeStatusTab extends StatelessWidget {
     }
 
     if (status == ChallengeStatus.failure) {
-      return RewardsErrorView(
-        title: 'Unable to load challenges',
-        onRetry: onRetry,
+      return RefreshIndicator(
+        color: AppPalette.bgFillPrimary,
+        onRefresh: onRefresh,
+        notificationPredicate: (notification) => notification.depth == 0,
+        child: RewardsErrorView(
+          title: 'Unable to load challenges',
+          onRetry: onRetry,
+          physics: const ClampingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+        ),
       );
     }
 
     if (challenges.isEmpty) {
-      return ChallengeEmptyView(
-        illustrationAsset: emptyIllustration,
-        fallbackIcon: emptyFallbackIcon,
-        title: emptyTitle,
-        message: emptyMessage,
-        onExplore: onExplore,
+      return RefreshIndicator(
+        color: AppPalette.bgFillPrimary,
+        onRefresh: onRefresh,
+        notificationPredicate: (notification) => notification.depth == 0,
+        child: ChallengeEmptyView(
+          illustrationAsset: emptyIllustration,
+          fallbackIcon: emptyFallbackIcon,
+          title: emptyTitle,
+          message: emptyMessage,
+          onExplore: onExplore,
+        ),
       );
     }
 
     // ASUMSI: desain kartu untuk Active dan History belum ada di Figma,
     // jadi memakai kartu yang sama dengan Discover.
-    return ListView.separated(
-      physics: const ClampingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics(),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-      itemCount: challenges.length,
-      separatorBuilder: (_, _) => const SizedBox(height: 10),
-      itemBuilder: (context, index) {
-        final challenge = challenges[index];
+    return RefreshIndicator(
+      color: AppPalette.bgFillPrimary,
+      onRefresh: onRefresh,
+      notificationPredicate: (notification) => notification.depth == 0,
+      child: ListView.separated(
+        physics: const ClampingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        itemCount: challenges.length,
+        separatorBuilder: (_, _) => const SizedBox(height: 10),
+        itemBuilder: (context, index) {
+          final challenge = challenges[index];
 
-        return ChallengeItem(
-          key: ValueKey(challenge.id),
-          challenge: challenge,
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) =>
-                    ChallengeDetailScreen(challengeId: challenge.id),
-              ),
-            );
-          },
-        );
-      },
+          return ChallengeItem(
+            key: ValueKey(challenge.id),
+            challenge: challenge,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(
+                  builder: (_) =>
+                      ChallengeDetailScreen(challengeId: challenge.id),
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
