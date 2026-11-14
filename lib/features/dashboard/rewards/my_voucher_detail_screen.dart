@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
+import 'package:runca/utility/snackbar_extension.dart';
 
 import 'cubit/my_voucher_detail_cubit.dart';
 import 'cubit/my_voucher_detail_state.dart';
@@ -118,8 +119,16 @@ class _MyVoucherDetailView extends StatelessWidget {
           Expanded(
             child: SafeArea(
               top: false,
-              child: BlocBuilder<MyVoucherDetailCubit, MyVoucherDetailState>(
-                builder: _buildBody,
+              child: BlocListener<MyVoucherDetailCubit, MyVoucherDetailState>(
+                listener: (context, state) {
+                  if (state.hasRefreshError) {
+                    context.showErrorSnackbar('Unable to refresh. Try again.');
+                    context.read<MyVoucherDetailCubit>().clearRefreshError();
+                  }
+                },
+                child: BlocBuilder<MyVoucherDetailCubit, MyVoucherDetailState>(
+                  builder: _buildBody,
+                ),
               ),
             ),
           ),
@@ -129,6 +138,8 @@ class _MyVoucherDetailView extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context, MyVoucherDetailState state) {
+    final cubit = context.read<MyVoucherDetailCubit>();
+
     if (state.status == MyVoucherDetailStatus.loading) {
       return const Center(
         child: CircularProgressIndicator(color: AppPalette.bgFillPrimary),
@@ -138,28 +149,41 @@ class _MyVoucherDetailView extends StatelessWidget {
     final voucher = state.voucher;
 
     if (state.status == MyVoucherDetailStatus.failure || voucher == null) {
-      return RewardsErrorView(
-        title: 'Unable to load voucher',
-        onRetry: context.read<MyVoucherDetailCubit>().loadVoucher,
+      return RefreshIndicator(
+        color: AppPalette.bgFillPrimary,
+        onRefresh: cubit.refresh,
+        child: RewardsErrorView(
+          title: 'Unable to load voucher',
+          onRetry: cubit.loadVoucher,
+          physics: const ClampingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+        ),
       );
     }
 
-    return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
-      child: Column(
-        children: [
-          VoucherTicketCard(
-            voucher: voucher,
-            onCopyCode: () => _copyCode(context, voucher.code),
-          ),
-          const SizedBox(height: 8),
-          VoucherOutletCard(outlet: voucher.outlet),
-          if (voucher.terms.isNotEmpty) ...[
+    return RefreshIndicator(
+      color: AppPalette.bgFillPrimary,
+      onRefresh: cubit.refresh,
+      child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 16, 20, 20),
+        child: Column(
+          children: [
+            VoucherTicketCard(
+              voucher: voucher,
+              onCopyCode: () => _copyCode(context, voucher.code),
+            ),
             const SizedBox(height: 8),
-            VoucherTermsCard(terms: voucher.terms),
+            VoucherOutletCard(outlet: voucher.outlet),
+            if (voucher.terms.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              VoucherTermsCard(terms: voucher.terms),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

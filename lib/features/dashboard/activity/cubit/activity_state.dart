@@ -27,12 +27,14 @@ class ActivityState {
     this.selectedFilter = ActivityFilter.all,
     this.searchQuery = '',
     this.activities = const [],
+    this.hasRefreshError = false,
   });
 
   final ActivityTab selectedTab;
   final ActivityStatus status;
   final ActivityFilter selectedFilter;
   final String searchQuery;
+  final bool hasRefreshError;
 
   /// Hasil dari repository, sudah terfilter dan tercari.
   final List<ActivityModel> activities;
@@ -47,6 +49,7 @@ class ActivityState {
     ActivityFilter? selectedFilter,
     String? searchQuery,
     List<ActivityModel>? activities,
+    bool? hasRefreshError,
   }) {
     return ActivityState(
       selectedTab: selectedTab ?? this.selectedTab,
@@ -54,6 +57,7 @@ class ActivityState {
       selectedFilter: selectedFilter ?? this.selectedFilter,
       searchQuery: searchQuery ?? this.searchQuery,
       activities: activities ?? this.activities,
+      hasRefreshError: hasRefreshError ?? this.hasRefreshError,
     );
   }
 }

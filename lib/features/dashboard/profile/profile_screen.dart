@@ -94,7 +94,27 @@ class ProfileScreen extends StatelessWidget {
 
                   if (state.status == ProfileStatus.failure &&
                       state.data == null) {
-                    return _ProfileLoadError(onRetry: cubit.loadProfile);
+                    return RefreshIndicator(
+                      color: AppPalette.bgFillPrimary,
+                      onRefresh: cubit.refresh,
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return SingleChildScrollView(
+                            physics: const ClampingScrollPhysics(
+                              parent: AlwaysScrollableScrollPhysics(),
+                            ),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(
+                                minHeight: constraints.maxHeight,
+                              ),
+                              child: _ProfileLoadError(
+                                onRetry: cubit.loadProfile,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    );
                   }
 
                   final ProfileData? data = state.data;
@@ -107,7 +127,7 @@ class ProfileScreen extends StatelessWidget {
 
                   return RefreshIndicator(
                     color: AppPalette.bgFillPrimary,
-                    onRefresh: cubit.loadProfile,
+                    onRefresh: cubit.refresh,
                     child: ProfileContent(
                       data: data,
                       hasRefreshError: state.status == ProfileStatus.failure,

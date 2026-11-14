@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:runca/features/dashboard/profile/models/profile_model.dart';
 import 'package:runca/ui/color.dart';
+import 'package:runca/ui/shared_view/app_image.dart';
 import 'package:runca/ui/typography.dart';
 
 class ProfileInfo extends StatelessWidget {
@@ -17,9 +18,7 @@ class ProfileInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        ClipOval(
-          child: _avatarImage(),
-        ),
+        ClipOval(child: _avatarImage()),
         const SizedBox(width: 14),
         Expanded(
           child: Column(
@@ -73,26 +72,12 @@ class ProfileInfo extends StatelessWidget {
   }
 
   Widget _avatarImage() {
-    final path = profile.avatarUrl;
-    if (path == null || path.isEmpty) return _avatarFallback();
-
-    final image = path.startsWith('http')
-        ? Image.network(
-            path,
-            width: 56,
-            height: 56,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => _avatarFallback(),
-          )
-        : Image.asset(
-            path,
-            width: 56,
-            height: 56,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => _avatarFallback(),
-          );
-
-    return image;
+    return AppImage(
+      path: profile.avatarUrl,
+      width: 56,
+      height: 56,
+      placeholder: _avatarFallback(),
+    );
   }
 
   Widget _avatarFallback() {

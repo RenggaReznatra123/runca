@@ -39,7 +39,33 @@ class _HomeView extends StatelessWidget {
 
   void _showRefreshError(BuildContext context) {
     context.read<HomeCubit>().clearError();
-    context.showInfoSnackbar('Unable to refresh home data. Try again.');
+    context.showErrorSnackbar('Unable to refresh. Try again.');
+  }
+
+  Future<void> _refreshHome(BuildContext context) async {
+    final homeCubit = context.read<HomeCubit>();
+    final activityCubit = context.read<ActivityCubit>();
+    final challengeCubit = context.read<ChallengeCubit>();
+    var homeSucceeded = false;
+
+    await Future.wait<void>([
+      homeCubit.refresh().then<void>((succeeded) {
+        homeSucceeded = succeeded;
+      }),
+      activityCubit.refresh(),
+      challengeCubit.refresh(),
+    ]);
+
+    if (!context.mounted || homeCubit.isClosed) return;
+
+    final hasError =
+        !homeSucceeded ||
+        activityCubit.state.hasRefreshError ||
+        challengeCubit.state.hasRefreshError;
+
+    activityCubit.clearRefreshError();
+    challengeCubit.clearRefreshError();
+    if (hasError) homeCubit.reportRefreshError();
   }
 
   void _openChallengeDetail(BuildContext context, String challengeId) {
@@ -83,43 +109,68 @@ class _HomeView extends StatelessWidget {
         overview == null ||
         weeklyStats == null ||
         profile == null) {
-      return HomeErrorView(onRetry: cubit.loadHome);
+      return RefreshIndicator(
+        color: AppPalette.bgFillPrimary,
+        onRefresh: () => _refreshHome(context),
+        notificationPredicate: (notification) => notification.depth == 0,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const ClampingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Center(child: HomeErrorView(onRetry: cubit.loadHome)),
+              ),
+            );
+          },
+        ),
+      );
     }
 
-    return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics(),
-      ),
-      padding: const EdgeInsets.only(bottom: 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
-            child: HomeHeader(name: profile.name),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: StreakCard(streak: overview.streak),
-          ),
-          const SizedBox(height: 28),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: WeeklyCalendar(weekDays: overview.weekDays),
-          ),
-          const SizedBox(height: 22),
-          const HomeSectionDivider(),
-          HomeWeeklySection(
-            stats: weeklyStats,
-            activityType: state.activityType,
-            onActivityTypeChanged: cubit.selectActivityType,
-          ),
-          const HomeLastActivitySection(),
-          HomeChallengesSection(
-            onChallengeTap: (id) => _openChallengeDetail(context, id),
-          ),
-          const SizedBox(height: 12),
-        ],
+    return RefreshIndicator(
+      color: AppPalette.bgFillPrimary,
+      onRefresh: () => _refreshHome(context),
+      notificationPredicate: (notification) => notification.depth == 0,
+      child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: const EdgeInsets.only(bottom: 24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 24, 20, 22),
+              child: HomeHeader(
+                name: profile.name,
+                avatarUrl: profile.avatarUrl,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: StreakCard(streak: overview.streak),
+            ),
+            const SizedBox(height: 28),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: WeeklyCalendar(weekDays: overview.weekDays),
+            ),
+            const SizedBox(height: 22),
+            const HomeSectionDivider(),
+            HomeWeeklySection(
+              stats: weeklyStats,
+              activityType: state.activityType,
+              onActivityTypeChanged: cubit.selectActivityType,
+            ),
+            const HomeLastActivitySection(),
+            HomeChallengesSection(
+              onChallengeTap: (id) => _openChallengeDetail(context, id),
+            ),
+            const SizedBox(height: 12),
+          ],
+        ),
       ),
     );
   }

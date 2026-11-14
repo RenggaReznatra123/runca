@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:runca/ui/color.dart';
+import 'package:runca/utility/snackbar_extension.dart';
 
 import 'cubit/rewards_cubit.dart';
 import 'cubit/rewards_state.dart';
@@ -100,47 +101,70 @@ class _RewardsView extends StatelessWidget {
               ),
             ),
             Expanded(
-              child: BlocBuilder<RewardsCubit, RewardsState>(
-                builder: (context, state) {
-                  final cubit = context.read<RewardsCubit>();
+              child: BlocListener<RewardsCubit, RewardsState>(
+                listener: (context, state) {
+                  if (state.hasRefreshError) {
+                    context.showErrorSnackbar('Unable to refresh. Try again.');
+                    context.read<RewardsCubit>().clearRefreshError();
+                  }
+                },
+                child: BlocBuilder<RewardsCubit, RewardsState>(
+                  builder: (context, state) {
+                    final cubit = context.read<RewardsCubit>();
 
-                  if (state.status == RewardsStatus.loading) {
-                    return const Center(
-                      child: CircularProgressIndicator(
+                    if (state.status == RewardsStatus.loading) {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: AppPalette.bgFillPrimary,
+                        ),
+                      );
+                    }
+
+                    if (state.status == RewardsStatus.failure) {
+                      return RefreshIndicator(
                         color: AppPalette.bgFillPrimary,
+                        onRefresh: cubit.refresh,
+                        notificationPredicate: (notification) =>
+                            notification.depth == 0,
+                        child: RewardsErrorView(
+                          title: 'Unable to load rewards',
+                          onRetry: cubit.loadRewards,
+                          physics: const ClampingScrollPhysics(
+                            parent: AlwaysScrollableScrollPhysics(),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return RefreshIndicator(
+                      color: AppPalette.bgFillPrimary,
+                      onRefresh: cubit.refresh,
+                      notificationPredicate: (notification) =>
+                          notification.depth == 0,
+                      child: RewardsContent(
+                        state: state,
+                        onHistoryTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const PlaCoinHistoryScreen(),
+                            ),
+                          );
+                        },
+                        onHowToEarnTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const HowToEarnScreen(),
+                            ),
+                          );
+                        },
+                        onFilterChanged: cubit.selectFilter,
+                        onRewardTap: (reward) {
+                          _openVoucherDetail(context, reward);
+                        },
                       ),
                     );
-                  }
-
-                  if (state.status == RewardsStatus.failure) {
-                    return RewardsErrorView(
-                      title: 'Unable to load rewards',
-                      onRetry: cubit.loadRewards,
-                    );
-                  }
-
-                  return RewardsContent(
-                    state: state,
-                    onHistoryTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const PlaCoinHistoryScreen(),
-                        ),
-                      );
-                    },
-                    onHowToEarnTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute<void>(
-                          builder: (_) => const HowToEarnScreen(),
-                        ),
-                      );
-                    },
-                    onFilterChanged: cubit.selectFilter,
-                    onRewardTap: (reward) {
-                      _openVoucherDetail(context, reward);
-                    },
-                  );
-                },
+                  },
+                ),
               ),
             ),
           ],

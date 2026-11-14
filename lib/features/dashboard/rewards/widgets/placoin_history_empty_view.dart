@@ -12,7 +12,9 @@ class PlaCoinHistoryEmptyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
       padding: const EdgeInsets.fromLTRB(20, 88, 20, 24),
       child: Column(
         children: [

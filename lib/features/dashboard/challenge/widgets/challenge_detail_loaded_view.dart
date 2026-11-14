@@ -12,18 +12,46 @@ class ChallengeDetailLoadedView extends StatelessWidget {
     super.key,
     required this.challenge,
     this.fromRun = false,
+    this.onRefresh,
   });
 
   final ChallengeDetail challenge;
 
   /// True kalau dibuka dari layar Setup lari.
   final bool fromRun;
+  final Future<void> Function()? onRefresh;
 
   static const double _sheetTop = 298;
   static const double _bannerHeight = 318;
 
   @override
   Widget build(BuildContext context) {
+    final scrollView = SingleChildScrollView(
+      physics: onRefresh == null
+          ? null
+          : const ClampingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
+            ),
+      child: Stack(
+        children: [
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: _bannerHeight,
+            child: ChallengeDetailHeader(
+              challenge: challenge,
+              onBack: () => Navigator.of(context).maybePop(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(top: _sheetTop),
+            child: ChallengeDetailSheet(challenge: challenge),
+          ),
+        ],
+      ),
+    );
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(
         statusBarColor: AppPalette.transparent,
@@ -33,26 +61,15 @@ class ChallengeDetailLoadedView extends StatelessWidget {
         body: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                child: Stack(
-                  children: [
-                    Positioned(
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      height: _bannerHeight,
-                      child: ChallengeDetailHeader(
-                        challenge: challenge,
-                        onBack: () => Navigator.of(context).maybePop(),
-                      ),
+              child: onRefresh == null
+                  ? scrollView
+                  : RefreshIndicator(
+                      color: AppPalette.bgFillPrimary,
+                      onRefresh: onRefresh!,
+                      notificationPredicate: (notification) =>
+                          notification.depth == 0,
+                      child: scrollView,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: _sheetTop),
-                      child: ChallengeDetailSheet(challenge: challenge),
-                    ),
-                  ],
-                ),
-              ),
             ),
             _JoinBar(
               onJoin: () {

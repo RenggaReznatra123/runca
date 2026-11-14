@@ -34,6 +34,7 @@ class ChallengeState {
     this.historyStatus = ChallengeStatus.loading,
     this.historyFilter = ChallengeFilter.all,
     this.historyChallenges = const [],
+    this.hasRefreshError = false,
   });
 
   /// Status, filter, dan daftar untuk tab Discover (juga dipakai Home).
@@ -51,6 +52,7 @@ class ChallengeState {
   final ChallengeStatus historyStatus;
   final ChallengeFilter historyFilter;
   final List<ChallengeModel> historyChallenges;
+  final bool hasRefreshError;
 
   ChallengeState copyWith({
     ChallengeStatus? status,
@@ -63,6 +65,7 @@ class ChallengeState {
     ChallengeStatus? historyStatus,
     ChallengeFilter? historyFilter,
     List<ChallengeModel>? historyChallenges,
+    bool? hasRefreshError,
   }) {
     return ChallengeState(
       status: status ?? this.status,
@@ -75,6 +78,7 @@ class ChallengeState {
       historyStatus: historyStatus ?? this.historyStatus,
       historyFilter: historyFilter ?? this.historyFilter,
       historyChallenges: historyChallenges ?? this.historyChallenges,
+      hasRefreshError: hasRefreshError ?? this.hasRefreshError,
     );
   }
 }

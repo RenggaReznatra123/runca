@@ -38,7 +38,9 @@ class ProgressCubit extends Cubit<ProgressState> {
     final date = state.selectedDate;
     final type = state.selectedFilter.type;
 
-    emit(state.copyWith(status: ProgressStatus.loading));
+    emit(
+      state.copyWith(status: ProgressStatus.loading, hasRefreshError: false),
+    );
 
     final (statsResult, recordsResult) = await (
       _repository.getStats(period: period, date: date, type: type),
@@ -54,16 +56,27 @@ class ProgressCubit extends Cubit<ProgressState> {
           status: ProgressStatus.success,
           stats: statsResult.data,
           records: recordsResult.data,
+          hasRefreshError: false,
         ),
       );
     } else {
-      emit(state.copyWith(status: ProgressStatus.failure));
+      emit(
+        state.copyWith(status: ProgressStatus.failure, hasRefreshError: false),
+      );
+    }
+  }
+
+  Future<void> refresh() => _reloadSilently(isRefresh: true);
+
+  void clearRefreshError() {
+    if (state.hasRefreshError) {
+      emit(state.copyWith(hasRefreshError: false));
     }
   }
 
   /// Ambil ulang statistik dan rekor tanpa loading. Kalau gagal, tampilan
   /// lama dibiarkan.
-  Future<void> _reloadSilently() async {
+  Future<void> _reloadSilently({bool isRefresh = false}) async {
     final requestId = ++_requestId;
     final period = state.selectedPeriod;
     final date = state.selectedDate;
@@ -83,8 +96,11 @@ class ProgressCubit extends Cubit<ProgressState> {
           status: ProgressStatus.success,
           stats: statsResult.data,
           records: recordsResult.data,
+          hasRefreshError: false,
         ),
       );
+    } else if (isRefresh) {
+      emit(state.copyWith(hasRefreshError: true));
     }
   }
 

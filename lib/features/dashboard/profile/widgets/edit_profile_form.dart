@@ -52,10 +52,14 @@ class _EditProfileFormState extends State<EditProfileForm> {
     _nameController = TextEditingController(text: data.name);
     _emailController = TextEditingController(text: data.email);
     _birthDateController = TextEditingController(
-      text: AppFormat.birthDate(data.birthDate),
+      text: data.birthDate == null ? '' : AppFormat.birthDate(data.birthDate!),
     );
-    _heightController = TextEditingController(text: '${data.heightCm}');
-    _weightController = TextEditingController(text: '${data.weightKg}');
+    _heightController = TextEditingController(
+      text: data.heightCm?.toString() ?? '',
+    );
+    _weightController = TextEditingController(
+      text: data.weightKg?.toString() ?? '',
+    );
     _locationController = TextEditingController(text: data.location);
   }
 
@@ -65,7 +69,9 @@ class _EditProfileFormState extends State<EditProfileForm> {
 
     // Tanggal lahir dipilih lewat date picker, jadi teksnya ikut diperbarui.
     if (oldWidget.data.birthDate != widget.data.birthDate) {
-      _birthDateController.text = AppFormat.birthDate(widget.data.birthDate);
+      _birthDateController.text = widget.data.birthDate == null
+          ? ''
+          : AppFormat.birthDate(widget.data.birthDate!);
     }
   }
 
@@ -85,18 +91,26 @@ class _EditProfileFormState extends State<EditProfileForm> {
   }
 
   String? _validateNumber(String? value, String message) {
-    final number = int.tryParse((value ?? '').trim());
+    final text = (value ?? '').trim();
+    if (text.isEmpty) return null;
+
+    final number = int.tryParse(text);
     return number == null || number <= 0 ? message : null;
   }
 
   void _submit() {
     if (!(_formKey.currentState?.validate() ?? false)) return;
 
+    final height = _heightController.text.trim();
+    final weight = _weightController.text.trim();
+
     widget.onSave(
       widget.data.copyWith(
         name: _nameController.text.trim(),
-        heightCm: int.parse(_heightController.text.trim()),
-        weightKg: int.parse(_weightController.text.trim()),
+        heightCm: height.isEmpty ? null : int.parse(height),
+        clearHeightCm: height.isEmpty,
+        weightKg: weight.isEmpty ? null : int.parse(weight),
+        clearWeightKg: weight.isEmpty,
         location: _locationController.text.trim(),
       ),
     );

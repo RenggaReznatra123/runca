@@ -6,6 +6,7 @@ import 'package:runca/ui/color.dart';
 import 'package:runca/ui/shared_view/app_page_header.dart';
 import 'package:runca/ui/shared_view/empty_view.dart';
 import 'package:runca/ui/shared_view/pill_chip_bar.dart';
+import 'package:runca/utility/snackbar_extension.dart';
 
 import 'cubit/achievements_cubit.dart';
 import 'cubit/achievements_state.dart';
@@ -55,8 +56,16 @@ class _AchievementsView extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             Expanded(
-              child: BlocBuilder<AchievementsCubit, AchievementsState>(
-                builder: _buildBody,
+              child: BlocListener<AchievementsCubit, AchievementsState>(
+                listener: (context, state) {
+                  if (state.hasRefreshError) {
+                    context.showErrorSnackbar('Unable to refresh. Try again.');
+                    context.read<AchievementsCubit>().clearRefreshError();
+                  }
+                },
+                child: BlocBuilder<AchievementsCubit, AchievementsState>(
+                  builder: _buildBody,
+                ),
               ),
             ),
           ],
@@ -75,36 +84,65 @@ class _AchievementsView extends StatelessWidget {
     }
 
     if (state.status == AchievementsLoadStatus.failure) {
-      return RewardsErrorView(
-        title: 'Unable to load achievements',
-        onRetry: cubit.loadAchievements,
+      return RefreshIndicator(
+        color: AppPalette.bgFillPrimary,
+        onRefresh: cubit.refresh,
+        child: RewardsErrorView(
+          title: 'Unable to load achievements',
+          onRetry: cubit.loadAchievements,
+          physics: const ClampingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+        ),
       );
     }
 
     if (state.achievements.isEmpty) {
-      return const EmptyView(message: 'No achievements found.');
+      return RefreshIndicator(
+        color: AppPalette.bgFillPrimary,
+        onRefresh: cubit.refresh,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              physics: const ClampingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: const Center(
+                  child: EmptyView(message: 'No achievements found.'),
+                ),
+              ),
+            );
+          },
+        ),
+      );
     }
 
-    return GridView.builder(
-      physics: const ClampingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics(),
-      ),
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 16,
-        mainAxisSpacing: 16,
-        mainAxisExtent: 176,
-      ),
-      itemCount: state.achievements.length,
-      itemBuilder: (context, index) {
-        final achievement = state.achievements[index];
+    return RefreshIndicator(
+      color: AppPalette.bgFillPrimary,
+      onRefresh: cubit.refresh,
+      child: GridView.builder(
+        physics: const ClampingScrollPhysics(
+          parent: AlwaysScrollableScrollPhysics(),
+        ),
+        padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          mainAxisExtent: 176,
+        ),
+        itemCount: state.achievements.length,
+        itemBuilder: (context, index) {
+          final achievement = state.achievements[index];
 
-        return AchievementCard(
-          key: ValueKey(achievement.id),
-          achievement: achievement,
-        );
-      },
+          return AchievementCard(
+            key: ValueKey(achievement.id),
+            achievement: achievement,
+          );
+        },
+      ),
     );
   }
 }

@@ -37,7 +37,9 @@ class MyVouchersEmptyView extends StatelessWidget {
     };
 
     return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
       padding: const EdgeInsets.fromLTRB(20, 68, 20, 24),
       child: Column(
         children: [

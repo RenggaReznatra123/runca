@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:runca/features/auth/cubit/profile_setup_cubit.dart';
 import 'package:runca/features/auth/cubit/profile_setup_state.dart';
+import 'package:runca/features/dashboard/profile/models/edit_profile_model.dart';
+import 'package:runca/features/dashboard/profile/models/profile_setup_model.dart';
+import 'package:runca/features/dashboard/profile/models/running_goal.dart';
 import 'package:runca/features/success/success_screen.dart';
 import 'package:runca/features/success/success_type.dart';
 import 'package:runca/utility/format_utils.dart';
@@ -26,9 +29,9 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
   final _birthdayController = TextEditingController();
 
   int _currentStep = 0;
-  String? _gender;
+  ProfileGender? _gender;
   DateTime? _birthday;
-  final Set<String> _selectedGoals = {};
+  final Set<RunningGoal> _selectedGoals = {};
 
   bool get _canContinue {
     switch (_currentStep) {
@@ -91,11 +94,13 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
     }
 
     context.read<ProfileSetupCubit>().submitProfile(
-      firstName: _firstNameController.text.trim(),
-      lastName: _lastNameController.text.trim(),
-      gender: _gender!,
-      birthday: _birthday!,
-      goals: _selectedGoals.toList(),
+      ProfileSetupData(
+        firstName: _firstNameController.text.trim(),
+        lastName: _lastNameController.text.trim(),
+        gender: _gender!,
+        birthDate: _birthday!,
+        goals: _selectedGoals.toList(),
+      ),
     );
   }
 
@@ -175,7 +180,7 @@ class _ProfileSetupFormState extends State<ProfileSetupForm> {
         return ProfileSetupGoalStep(
           firstName: _firstNameController.text.trim(),
           selectedGoals: _selectedGoals,
-          onToggle: (goal) {
+          onToggle: (RunningGoal goal) {
             setState(() {
               if (_selectedGoals.contains(goal)) {
                 _selectedGoals.remove(goal);

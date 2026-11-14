@@ -1,14 +1,20 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:runca/config/app_config.dart';
+import 'package:runca/config/service_locator.dart';
+import 'package:runca/config/user_preference.dart';
 import 'package:runca/features/auth/dummy_auth_service.dart';
+import 'package:runca/models/user_model.dart';
 
 part 'sign_up_state.dart';
 
 class SignUpCubit extends Cubit<SignUpState> {
-  SignUpCubit() : super(SignUpInitial());
+  SignUpCubit({UserPreference? userPreference})
+    : _userPreference = userPreference ?? serviceLocator.get<UserPreference>(),
+      super(SignUpInitial());
 
   final DummyAuthService _authService = DummyAuthService();
+  final UserPreference _userPreference;
 
   static const String _notConnectedMessage =
       'Sign up API is not connected yet.';
@@ -39,6 +45,12 @@ class SignUpCubit extends Cubit<SignUpState> {
         emit(SignUpStateError(message: errorMessage));
         return;
       }
+
+      final saved = await _userPreference.setUser(
+        UserModel(email: email.trim().toLowerCase()),
+      );
+      if (!saved) throw StateError('Unable to save the user session.');
+      if (isClosed) return;
 
       emit(SignUpStateSuccess());
     } catch (_) {

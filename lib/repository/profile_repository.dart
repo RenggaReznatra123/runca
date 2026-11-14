@@ -1,5 +1,6 @@
 import 'package:runca/features/dashboard/profile/models/edit_profile_model.dart';
 import 'package:runca/features/dashboard/profile/models/profile_model.dart';
+import 'package:runca/features/dashboard/profile/models/profile_setup_model.dart';
 import 'package:runca/utility/resource/data_state.dart';
 
 abstract class ProfileRepository {
@@ -15,4 +16,10 @@ abstract class ProfileRepository {
 
   /// Menyimpan perubahan profil. Email tidak diubah oleh server.
   Future<DataState<EditProfileData>> updateProfile(EditProfileData data);
+
+  /// Menyimpan data profil yang dikumpulkan saat onboarding.
+  Future<DataState<EditProfileData>> saveSetupProfile(ProfileSetupData data);
+
+  /// Memberi sinyal saat data profil berubah agar Home memuat ulang.
+  Stream<void> get changes;
 }

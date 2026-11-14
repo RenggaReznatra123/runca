@@ -19,8 +19,21 @@ class PlaCoinHistoryCubit extends Cubit<PlaCoinHistoryState> {
 
   /// Muat awal dan Try Again: layar menampilkan loading.
   Future<void> loadHistory() async {
-    emit(state.copyWith(status: PlaCoinHistoryStatus.loading));
+    emit(
+      state.copyWith(
+        status: PlaCoinHistoryStatus.loading,
+        hasRefreshError: false,
+      ),
+    );
     await _fetch();
+  }
+
+  Future<void> refresh() => _fetch(isRefresh: true);
+
+  void clearRefreshError() {
+    if (state.hasRefreshError) {
+      emit(state.copyWith(hasRefreshError: false));
+    }
   }
 
   /// Ganti tab: daftar lama tetap tampil sampai hasil baru datang.
@@ -31,7 +44,7 @@ class PlaCoinHistoryCubit extends Cubit<PlaCoinHistoryState> {
     await _fetch();
   }
 
-  Future<void> _fetch() async {
+  Future<void> _fetch({bool isRefresh = false}) async {
     final requestId = ++_requestId;
 
     final result = await _repository.getCoinHistory(filter: state.filter);
@@ -46,12 +59,22 @@ class PlaCoinHistoryCubit extends Cubit<PlaCoinHistoryState> {
           state.copyWith(
             status: PlaCoinHistoryStatus.success,
             transactions: data,
+            hasRefreshError: false,
           ),
         );
         return;
       }
     }
 
-    emit(state.copyWith(status: PlaCoinHistoryStatus.failure));
+    if (isRefresh) {
+      emit(state.copyWith(hasRefreshError: true));
+    } else {
+      emit(
+        state.copyWith(
+          status: PlaCoinHistoryStatus.failure,
+          hasRefreshError: false,
+        ),
+      );
+    }
   }
 }

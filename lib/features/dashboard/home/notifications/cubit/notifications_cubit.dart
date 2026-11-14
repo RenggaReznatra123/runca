@@ -17,9 +17,26 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   final NotificationsRepository _repository;
   int _requestId = 0;
 
-  Future<void> loadNotifications() async {
+  Future<void> loadNotifications() => _fetch(showLoading: true);
+
+  Future<void> refresh() => _fetch(showLoading: false);
+
+  void clearRefreshError() {
+    if (state.hasRefreshError) {
+      emit(state.copyWith(hasRefreshError: false));
+    }
+  }
+
+  Future<void> _fetch({required bool showLoading}) async {
     final requestId = ++_requestId;
-    emit(state.copyWith(status: NotificationsStatus.loading));
+    if (showLoading) {
+      emit(
+        state.copyWith(
+          status: NotificationsStatus.loading,
+          hasRefreshError: false,
+        ),
+      );
+    }
 
     final result = await _repository.getNotifications();
     if (isClosed || requestId != _requestId) return;
@@ -29,10 +46,18 @@ class NotificationsCubit extends Cubit<NotificationsState> {
         state.copyWith(
           status: NotificationsStatus.success,
           notifications: result.data ?? const [],
+          hasRefreshError: false,
+        ),
+      );
+    } else if (showLoading) {
+      emit(
+        state.copyWith(
+          status: NotificationsStatus.failure,
+          hasRefreshError: false,
         ),
       );
     } else {
-      emit(state.copyWith(status: NotificationsStatus.failure));
+      emit(state.copyWith(hasRefreshError: true));
     }
   }
 }

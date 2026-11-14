@@ -45,105 +45,115 @@ class _RunSummaryView extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<RunSummaryCubit>();
 
-    return Scaffold(
-      backgroundColor: AppPalette.bg,
-      body: SafeArea(
-        child: BlocBuilder<RunSummaryCubit, RunSummaryState>(
-          builder: (context, state) {
-            final activity = state.activity;
+    return BlocListener<RunSummaryCubit, RunSummaryState>(
+      listenWhen: (previous, current) =>
+          previous.notice != current.notice &&
+          current.notice != RunSummaryNotice.none,
+      listener: (context, state) {
+        context.showErrorSnackbar('Unable to add photo. Please try again.');
+        cubit.clearNotice();
+      },
+      child: Scaffold(
+        backgroundColor: AppPalette.bg,
+        body: SafeArea(
+          child: BlocBuilder<RunSummaryCubit, RunSummaryState>(
+            builder: (context, state) {
+              final activity = state.activity;
 
-            if (state.status == RunSummaryStatus.saving) {
-              return const Center(
-                child: CircularProgressIndicator(
-                  color: AppPalette.bgFillPrimary,
-                ),
-              );
-            }
+              if (state.status == RunSummaryStatus.saving) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: AppPalette.bgFillPrimary,
+                  ),
+                );
+              }
 
-            if (state.status == RunSummaryStatus.failure || activity == null) {
-              return Center(child: ActivityErrorView(onRetry: cubit.save));
-            }
+              if (state.status == RunSummaryStatus.failure ||
+                  activity == null) {
+                return Center(child: ActivityErrorView(onRetry: cubit.save));
+              }
 
-            final isTreadmill = activity.type == ActivityType.treadmill;
+              final isTreadmill = activity.type == ActivityType.treadmill;
 
-            return Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const ClampingScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        RunSummaryHeader(
-                          startedAt: activity.startedAt,
-                          title: isTreadmill
-                              ? 'Treadmill Complete!'
-                              : 'Run Complete!',
-                        ),
-                        const SizedBox(height: 24),
-                        RunSummaryTitle(
-                          title: activity.title,
-                          onRename: cubit.rename,
-                        ),
-                        const SizedBox(height: 24),
-                        if (isTreadmill) ...[
-                          TreadmillSummaryStats(
-                            durationSeconds: activity.durationSeconds,
-                            steps: activity.steps ?? 0,
-                          ),
-                          const SizedBox(height: 32),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TreadmillSummaryAddCard(
-                                  label: 'Calories',
-                                  onTap: () =>
-                                      _showUnavailable(context, 'Calories'),
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: TreadmillSummaryAddCard(
-                                  label: 'Distance',
-                                  onTap: () =>
-                                      _showUnavailable(context, 'Distance'),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ] else ...[
-                          RunSummaryStats(
-                            distanceKm: activity.distanceKm,
-                            durationSeconds: activity.durationSeconds,
-                            paceSecondsPerKm: activity.avgPaceSecondsPerKm,
-                            calories: activity.calories,
+              return Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      physics: const ClampingScrollPhysics(),
+                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          RunSummaryHeader(
+                            startedAt: activity.startedAt,
+                            title: isTreadmill
+                                ? 'Treadmill Complete!'
+                                : 'Run Complete!',
                           ),
                           const SizedBox(height: 24),
-                          RunSummaryMap(
-                            route: activity.route,
-                            onCameraTap: () =>
-                                _showUnavailable(context, 'Photo'),
+                          RunSummaryTitle(
+                            title: activity.title,
+                            onRename: cubit.rename,
                           ),
+                          const SizedBox(height: 24),
+                          if (isTreadmill) ...[
+                            TreadmillSummaryStats(
+                              durationSeconds: activity.durationSeconds,
+                              steps: activity.steps ?? 0,
+                            ),
+                            const SizedBox(height: 32),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TreadmillSummaryAddCard(
+                                    label: 'Calories',
+                                    onTap: () =>
+                                        _showUnavailable(context, 'Calories'),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: TreadmillSummaryAddCard(
+                                    label: 'Distance',
+                                    onTap: () =>
+                                        _showUnavailable(context, 'Distance'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ] else ...[
+                            RunSummaryStats(
+                              distanceKm: activity.distanceKm,
+                              durationSeconds: activity.durationSeconds,
+                              paceSecondsPerKm: activity.avgPaceSecondsPerKm,
+                              calories: activity.calories,
+                            ),
+                            const SizedBox(height: 24),
+                            RunSummaryMap(
+                              route: activity.route,
+                              photoPath: activity.photoPath,
+                              onCameraTap: cubit.pickPhoto,
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
-                ),
-                RunSummaryActions(
-                  onBackToHome: () => Navigator.of(context).pop(),
-                  onViewDetails: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) =>
-                            ActivityDetailScreen(activityId: activity.id),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            );
-          },
+                  RunSummaryActions(
+                    onBackToHome: () => Navigator.of(context).pop(),
+                    onViewDetails: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute<void>(
+                          builder: (_) =>
+                              ActivityDetailScreen(activityId: activity.id),
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
         ),
       ),
     );

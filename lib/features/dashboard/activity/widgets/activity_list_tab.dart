@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:runca/ui/color.dart';
 import 'package:runca/ui/shared_view/empty_view.dart';
 import 'package:runca/features/dashboard/run/run_screen.dart';
+import 'package:runca/utility/snackbar_extension.dart';
 import '../activity_detail_screen.dart';
 import '../cubit/activity_cubit.dart';
 import '../cubit/activity_state.dart';
@@ -21,29 +22,42 @@ class ActivityListTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<ActivityCubit>();
 
-    return CustomScrollView(
-      key: const PageStorageKey<String>('activity_list_scroll'),
-      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      physics: const ClampingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics(),
+    return BlocListener<ActivityCubit, ActivityState>(
+      listener: (context, state) {
+        if (state.hasRefreshError) {
+          context.showErrorSnackbar('Unable to refresh. Try again.');
+          cubit.clearRefreshError();
+        }
+      },
+      child: RefreshIndicator(
+        color: AppPalette.bgFillPrimary,
+        onRefresh: cubit.refresh,
+        notificationPredicate: (notification) => notification.depth == 0,
+        child: CustomScrollView(
+          key: const PageStorageKey<String>('activity_list_scroll'),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          physics: const ClampingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: ActivitySearchField(onChanged: cubit.search),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            SliverToBoxAdapter(
+              child: ActivityFilterChips(
+                selectedFilter: state.selectedFilter,
+                onChanged: cubit.selectFilter,
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            ..._buildContent(context, cubit),
+          ],
+        ),
       ),
-      slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: ActivitySearchField(onChanged: cubit.search),
-          ),
-        ),
-        const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        SliverToBoxAdapter(
-          child: ActivityFilterChips(
-            selectedFilter: state.selectedFilter,
-            onChanged: cubit.selectFilter,
-          ),
-        ),
-        const SliverToBoxAdapter(child: SizedBox(height: 24)),
-        ..._buildContent(context, cubit),
-      ],
     );
   }
 

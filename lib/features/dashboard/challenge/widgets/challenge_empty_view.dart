@@ -26,7 +26,9 @@ class ChallengeEmptyView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      physics: const ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
       padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
       child: Column(
         children: [

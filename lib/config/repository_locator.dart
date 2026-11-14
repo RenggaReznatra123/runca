@@ -63,7 +63,7 @@ void registerRepositories(GetIt locator) {
   );
 
   locator.registerLazySingleton<ProfileRepository>(
-    () => DummyProfileRepository(locator.get<DummyWallet>()),
+    () => DummyProfileRepository(locator.get(), locator.get()),
   );
 
   locator.registerLazySingleton<RewardsRepository>(

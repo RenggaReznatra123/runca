@@ -1,7 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:runca/features/dashboard/profile/models/running_goal.dart';
 import 'package:runca/ui/color.dart';
 
 import 'profile_setup_heading.dart';
+
+extension RunningGoalPresentation on RunningGoal {
+  String get label => switch (this) {
+    RunningGoal.stayHealthyFit => 'Stay Healthy & Fit',
+    RunningGoal.buildCardioEndurance => 'Build Cardio Endurance',
+    RunningGoal.prepareForRaceEvent => 'Prepare for a Race / Event',
+    RunningGoal.loseWeightBurnFat => 'Lose Weight & Burn Fat',
+    RunningGoal.improveSpeedPace => 'Improve Speed & Pace',
+  };
+}
 
 class ProfileSetupGoalStep extends StatelessWidget {
   const ProfileSetupGoalStep({
@@ -11,17 +22,9 @@ class ProfileSetupGoalStep extends StatelessWidget {
     super.key,
   });
 
-  static const List<String> _runningGoals = [
-    'Stay Healthy & Fit',
-    'Build Cardio Endurance',
-    'Prepare for a Race / Event',
-    'Lose Weight & Burn Fat',
-    'Improve Speed & Pace',
-  ];
-
   final String firstName;
-  final Set<String> selectedGoals;
-  final ValueChanged<String> onToggle;
+  final Set<RunningGoal> selectedGoals;
+  final ValueChanged<RunningGoal> onToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +38,7 @@ class ProfileSetupGoalStep extends StatelessWidget {
           subtitle: 'Select what motivates you the most to start moving.',
         ),
         const SizedBox(height: 28),
-        ..._runningGoals.map((goal) {
+        ...RunningGoal.values.map((goal) {
           final selected = selectedGoals.contains(goal);
 
           return Padding(
@@ -64,7 +67,7 @@ class ProfileSetupGoalStep extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Text(
-                        goal,
+                        goal.label,
                         style: const TextStyle(
                           fontSize: 14,
                           color: AppPalette.textNeutralPrimary,

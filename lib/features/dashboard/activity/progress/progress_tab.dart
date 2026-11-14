@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:runca/ui/color.dart';
+import 'package:runca/utility/snackbar_extension.dart';
 
 import 'cubit/progress_cubit.dart';
 import 'cubit/progress_state.dart';
@@ -26,45 +28,58 @@ class _ProgressView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ProgressCubit, ProgressState>(
-      builder: (context, state) {
-        final cubit = context.read<ProgressCubit>();
-
-        return SingleChildScrollView(
-          key: const PageStorageKey<String>('progress_scroll'),
-          physics: const ClampingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
-          ),
-          padding: const EdgeInsets.only(bottom: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: _pagePadding,
-                child: ProgressStatsHeader(
-                  selectedFilter: state.selectedFilter,
-                  onFilterChanged: cubit.selectFilter,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Padding(
-                padding: _pagePadding,
-                child: ProgressPeriodSelector(
-                  selectedPeriod: state.selectedPeriod,
-                  onChanged: cubit.selectPeriod,
-                ),
-              ),
-              const SizedBox(height: 24),
-              ProgressDetails(
-                state: state,
-                onRetry: cubit.loadProgress,
-                onPreviousDate: cubit.previousDate,
-                onNextDate: cubit.nextDate,
-              ),
-            ],
-          ),
-        );
+    return BlocListener<ProgressCubit, ProgressState>(
+      listener: (context, state) {
+        if (state.hasRefreshError) {
+          context.showErrorSnackbar('Unable to refresh. Try again.');
+          context.read<ProgressCubit>().clearRefreshError();
+        }
       },
+      child: BlocBuilder<ProgressCubit, ProgressState>(
+        builder: (context, state) {
+          final cubit = context.read<ProgressCubit>();
+
+          return RefreshIndicator(
+            color: AppPalette.bgFillPrimary,
+            onRefresh: cubit.refresh,
+            notificationPredicate: (notification) => notification.depth == 0,
+            child: SingleChildScrollView(
+              key: const PageStorageKey<String>('progress_scroll'),
+              physics: const ClampingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              padding: const EdgeInsets.only(bottom: 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: _pagePadding,
+                    child: ProgressStatsHeader(
+                      selectedFilter: state.selectedFilter,
+                      onFilterChanged: cubit.selectFilter,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Padding(
+                    padding: _pagePadding,
+                    child: ProgressPeriodSelector(
+                      selectedPeriod: state.selectedPeriod,
+                      onChanged: cubit.selectPeriod,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  ProgressDetails(
+                    state: state,
+                    onRetry: cubit.loadProgress,
+                    onPreviousDate: cubit.previousDate,
+                    onNextDate: cubit.nextDate,
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

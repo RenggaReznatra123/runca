@@ -5,6 +5,14 @@ import 'package:runca/ui/typography.dart';
 
 import '../models/edit_profile_model.dart';
 
+extension ProfileGenderPresentation on ProfileGender {
+  String get label => switch (this) {
+    ProfileGender.male => 'Male',
+    ProfileGender.female => 'Female',
+    ProfileGender.preferNotToSay => 'Prefer not to say',
+  };
+}
+
 /// Pilihan gender berbentuk radio (Male / Female / Prefer not to say).
 class EditProfileGenderField extends StatelessWidget {
   const EditProfileGenderField({
@@ -13,7 +21,7 @@ class EditProfileGenderField extends StatelessWidget {
     required this.onChanged,
   });
 
-  final ProfileGender selected;
+  final ProfileGender? selected;
   final ValueChanged<ProfileGender> onChanged;
 
   @override

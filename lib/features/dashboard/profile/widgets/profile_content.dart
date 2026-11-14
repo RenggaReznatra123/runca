@@ -37,7 +37,9 @@ class ProfileContent extends StatelessWidget {
     final profile = data.profile;
 
     return ListView(
-      physics: const AlwaysScrollableScrollPhysics(),
+      physics: const ClampingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
       children: [
         ProfileHeader(onSettingsTap: onSettingsTap),

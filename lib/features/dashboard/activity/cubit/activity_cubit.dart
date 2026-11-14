@@ -34,6 +34,14 @@ class ActivityCubit extends Cubit<ActivityState> {
   /// Muat awal dan tombol Try Again. Menampilkan loading.
   Future<void> loadActivities() => _fetch(showLoading: true);
 
+  Future<void> refresh() => _fetch(showLoading: false, isRefresh: true);
+
+  void clearRefreshError() {
+    if (state.hasRefreshError) {
+      emit(state.copyWith(hasRefreshError: false));
+    }
+  }
+
   void selectTab(ActivityTab tab) {
     if (tab == state.selectedTab) return;
 
@@ -57,13 +65,18 @@ class ActivityCubit extends Cubit<ActivityState> {
     _searchDebounce = Timer(_searchDelay, () => _fetch(showLoading: false));
   }
 
-  Future<void> _fetch({required bool showLoading}) async {
+  Future<void> _fetch({
+    required bool showLoading,
+    bool isRefresh = false,
+  }) async {
     final requestId = ++_requestId;
     final type = state.selectedFilter.type;
     final keyword = state.searchQuery.trim();
 
     if (showLoading) {
-      emit(state.copyWith(status: ActivityStatus.loading));
+      emit(
+        state.copyWith(status: ActivityStatus.loading, hasRefreshError: false),
+      );
     }
 
     final result = await _repository.getActivities(
@@ -78,10 +91,15 @@ class ActivityCubit extends Cubit<ActivityState> {
         state.copyWith(
           status: ActivityStatus.success,
           activities: result.data ?? const [],
+          hasRefreshError: false,
         ),
       );
+    } else if (isRefresh) {
+      emit(state.copyWith(hasRefreshError: true));
     } else {
-      emit(state.copyWith(status: ActivityStatus.failure));
+      emit(
+        state.copyWith(status: ActivityStatus.failure, hasRefreshError: false),
+      );
     }
   }
 

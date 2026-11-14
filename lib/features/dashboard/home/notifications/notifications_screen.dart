@@ -32,52 +32,83 @@ class _NotificationsView extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppPalette.baseWhite,
       body: SafeArea(
-        child: BlocBuilder<NotificationsCubit, NotificationsState>(
-          builder: (context, state) {
-            if (state.status == NotificationsStatus.loading ||
-                state.status == NotificationsStatus.initial) {
-              return const Center(
-                child: CircularProgressIndicator(
-                  color: AppPalette.bgFillPrimary,
-                ),
-              );
+        child: BlocListener<NotificationsCubit, NotificationsState>(
+          listener: (context, state) {
+            if (state.hasRefreshError) {
+              context.showErrorSnackbar('Unable to refresh. Try again.');
+              context.read<NotificationsCubit>().clearRefreshError();
             }
-
-            if (state.status == NotificationsStatus.failure) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'Unable to load notifications. Check your connection and try again.',
-                        textAlign: TextAlign.center,
-                        style: AppTypography.bodyMedium(
-                          color: AppPalette.textNeutralPrimary,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      TextButton(
-                        onPressed: () {
-                          context
-                              .read<NotificationsCubit>()
-                              .loadNotifications();
-                        },
-                        child: const Text('Try Again'),
-                      ),
-                    ],
-                  ),
-                ),
-              );
-            }
-
-            return NotificationsContent(
-              notifications: state.notifications,
-              onBack: () => Navigator.of(context).maybePop(),
-              onAction: (notification) => _handleAction(context, notification),
-            );
           },
+          child: BlocBuilder<NotificationsCubit, NotificationsState>(
+            builder: (context, state) {
+              final cubit = context.read<NotificationsCubit>();
+
+              if (state.status == NotificationsStatus.loading ||
+                  state.status == NotificationsStatus.initial) {
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: AppPalette.bgFillPrimary,
+                  ),
+                );
+              }
+
+              if (state.status == NotificationsStatus.failure) {
+                return RefreshIndicator(
+                  color: AppPalette.bgFillPrimary,
+                  onRefresh: cubit.refresh,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return SingleChildScrollView(
+                        physics: const ClampingScrollPhysics(
+                          parent: AlwaysScrollableScrollPhysics(),
+                        ),
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(
+                            minHeight: constraints.maxHeight,
+                          ),
+                          child: Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    'Unable to load notifications. Check your connection and try again.',
+                                    textAlign: TextAlign.center,
+                                    style: AppTypography.bodyMedium(
+                                      color: AppPalette.textNeutralPrimary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  TextButton(
+                                    onPressed: cubit.loadNotifications,
+                                    child: const Text('Try Again'),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                );
+              }
+
+              return RefreshIndicator(
+                color: AppPalette.bgFillPrimary,
+                onRefresh: cubit.refresh,
+                child: NotificationsContent(
+                  notifications: state.notifications,
+                  onBack: () => Navigator.of(context).maybePop(),
+                  onAction: (notification) =>
+                      _handleAction(context, notification),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

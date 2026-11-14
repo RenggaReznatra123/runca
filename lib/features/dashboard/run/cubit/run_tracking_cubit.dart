@@ -104,7 +104,9 @@ class RunTrackingCubit extends Cubit<RunTrackingState> {
 
     if (result is DataStateSuccess<EditProfileData>) {
       final data = result.data;
-      if (data != null) _weightKg = data.weightKg.toDouble();
+      if (data != null && data.weightKg != null) {
+        _weightKg = data.weightKg!.toDouble();
+      }
     }
   }
 

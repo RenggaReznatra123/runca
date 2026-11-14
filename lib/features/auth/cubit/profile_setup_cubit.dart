@@ -1,26 +1,40 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import 'package:runca/config/service_locator.dart';
+import 'package:runca/features/dashboard/profile/models/edit_profile_model.dart';
+import 'package:runca/features/dashboard/profile/models/profile_setup_model.dart';
+import 'package:runca/repository/profile_repository.dart';
+import 'package:runca/utility/resource/data_state.dart';
+
 import 'profile_setup_state.dart';
 
 class ProfileSetupCubit extends Cubit<ProfileSetupState> {
-  ProfileSetupCubit() : super(const ProfileSetupState());
+  ProfileSetupCubit({ProfileRepository? repository})
+    : _repository = repository ?? serviceLocator.get<ProfileRepository>(),
+      super(const ProfileSetupState());
 
-  Future<void> submitProfile({
-    required String firstName,
-    required String lastName,
-    required String gender,
-    required DateTime birthday,
-    required List<String> goals,
-  }) async {
+  final ProfileRepository _repository;
+
+  Future<void> submitProfile(ProfileSetupData data) async {
     emit(state.copyWith(status: ProfileSetupStatus.loading, clearError: true));
 
     try {
-      // TODO: Ganti dengan pemanggilan fungsi dari DummyAuthSource/API
-      await Future.delayed(const Duration(seconds: 2));
+      final result = await _repository.saveSetupProfile(data);
 
       if (isClosed) return;
 
-      emit(state.copyWith(status: ProfileSetupStatus.success));
-    } catch (e) {
+      if (result is DataStateSuccess<EditProfileData> && result.data != null) {
+        emit(state.copyWith(status: ProfileSetupStatus.success));
+        return;
+      }
+
+      emit(
+        state.copyWith(
+          status: ProfileSetupStatus.failure,
+          errorMessage: 'Gagal menyimpan profil. Periksa koneksi Anda.',
+        ),
+      );
+    } catch (_) {
       if (isClosed) return;
 
       emit(

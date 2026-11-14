@@ -26,18 +26,28 @@ class EditProfileScreen extends StatelessWidget {
 class _EditProfileView extends StatelessWidget {
   const _EditProfileView();
 
-  Future<void> _pickBirthDate(BuildContext context, DateTime current) async {
+  Future<void> _pickBirthDate(BuildContext context, DateTime? current) async {
     final cubit = context.read<EditProfileCubit>();
+    final now = DateTime.now();
 
     final picked = await showDatePicker(
       context: context,
-      initialDate: current,
+      initialDate: current ?? DateTime(now.year - 16, now.month, now.day),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
     );
 
     if (picked == null || cubit.isClosed) return;
     cubit.selectBirthDate(picked);
+  }
+
+  Future<void> _pickAvatar(BuildContext context, EditProfileCubit cubit) async {
+    final result = await cubit.pickAvatar();
+    if (!context.mounted || result != EditProfileAvatarPickResult.failed) {
+      return;
+    }
+
+    context.showErrorSnackbar('Unable to open your photos.');
   }
 
   @override
@@ -101,10 +111,7 @@ class _EditProfileView extends StatelessWidget {
       isSaving: state.saveStatus == EditProfileSaveStatus.saving,
       onGenderChanged: cubit.selectGender,
       onPickBirthDate: () => _pickBirthDate(context, draft.birthDate),
-      onCameraTap: () => context.showUnavailableSnackbar(
-        'Change photo',
-        duration: const Duration(seconds: 2),
-      ),
+      onCameraTap: () => _pickAvatar(context, cubit),
       onSave: cubit.save,
     );
   }
