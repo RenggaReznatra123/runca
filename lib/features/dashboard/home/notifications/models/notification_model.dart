@@ -1,3 +1,5 @@
+import 'package:runca/features/dashboard/activity/models/activity_model.dart';
+
 enum NotificationType { reminder, streak, activity, weeklyProgress }
 
 class NotificationModel {
@@ -31,6 +33,8 @@ class ActivitySummary {
     required this.durationSeconds,
     required this.paceSecondsPerKm,
     required this.calories,
+    this.route = const [],
+    this.mapImageUrl,
   });
 
   final String title;
@@ -38,6 +42,8 @@ class ActivitySummary {
   final int durationSeconds;
   final int paceSecondsPerKm;
   final int calories;
+  final List<RoutePoint> route;
+  final String? mapImageUrl;
 }
 
 class WeeklyProgress {
