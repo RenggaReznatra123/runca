@@ -46,53 +46,59 @@ class NotificationsContent extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(20, 22, 20, 24),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              NotificationSection(
-                title: 'Today',
-                date: AppFormat.notificationSectionDate(now),
-              ),
-              const SizedBox(height: 28),
-              ...today.expand(
-                (notification) => [
-                  NotificationItem(
-                    notification: notification,
-                    onAction: () => onAction(notification),
-                  ),
-                  const SizedBox(height: 38),
-                ],
-              ),
-              const SizedBox(height: 26),
-              NotificationSection(
-                title: 'Yesterday',
-                date: AppFormat.notificationSectionDate(
-                  now.subtract(const Duration(days: 1)),
+              if (today.isNotEmpty) ...[
+                NotificationSection(
+                  title: 'Today',
+                  date: AppFormat.notificationSectionDate(now),
                 ),
-              ),
-              const SizedBox(height: 50),
-              ...yesterday.expand(
-                (notification) => [
-                  NotificationItem(
-                    notification: notification,
-                    onAction: () => onAction(notification),
+                const SizedBox(height: 28),
+                ...today.expand(
+                  (notification) => [
+                    NotificationItem(
+                      notification: notification,
+                      onAction: () => onAction(notification),
+                    ),
+                    const SizedBox(height: 38),
+                  ],
+                ),
+                const SizedBox(height: 26),
+              ],
+              if (yesterday.isNotEmpty) ...[
+                NotificationSection(
+                  title: 'Yesterday',
+                  date: AppFormat.notificationSectionDate(
+                    now.subtract(const Duration(days: 1)),
                   ),
-                  const SizedBox(height: 32),
-                ],
-              ),
-              const SizedBox(height: 30),
-              NotificationSection(
-                title: 'This Week',
-                date: AppFormat.notificationWeekRange(now),
-              ),
-              const SizedBox(height: 50),
-              ...thisWeek.expand(
-                (notification) => [
-                  NotificationItem(
-                    notification: notification,
-                    onAction: () => onAction(notification),
-                  ),
-                  const SizedBox(height: 32),
-                ],
-              ),
-              const SizedBox(height: 18),
+                ),
+                const SizedBox(height: 50),
+                ...yesterday.expand(
+                  (notification) => [
+                    NotificationItem(
+                      notification: notification,
+                      onAction: () => onAction(notification),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+                const SizedBox(height: 30),
+              ],
+              if (thisWeek.isNotEmpty) ...[
+                NotificationSection(
+                  title: 'This Week',
+                  date: AppFormat.notificationWeekRange(now),
+                ),
+                const SizedBox(height: 50),
+                ...thisWeek.expand(
+                  (notification) => [
+                    NotificationItem(
+                      notification: notification,
+                      onAction: () => onAction(notification),
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+                ),
+                const SizedBox(height: 18),
+              ],
               Center(
                 child: Text(
                   "You're all caught up on earlier updates",

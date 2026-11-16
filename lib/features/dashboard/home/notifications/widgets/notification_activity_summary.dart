@@ -3,6 +3,7 @@ import 'package:runca/ui/color.dart';
 import 'package:runca/ui/typography.dart';
 import 'package:runca/utility/format_utils.dart';
 
+import '../../../activity/widgets/route_map_preview.dart';
 import '../models/notification_model.dart';
 
 class NotificationActivitySummary extends StatelessWidget {
@@ -20,17 +21,27 @@ class NotificationActivitySummary extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(7),
-          child: Container(
-            width: 64,
-            height: 46,
-            color: AppPalette.bgSurfaceNeutral,
-            alignment: Alignment.center,
-            child: const Icon(
-              Icons.map_outlined,
-              color: _secondaryColor,
-              size: 25,
-            ),
-          ),
+          child:
+              activity.route.length >= 2 ||
+                  (activity.mapImageUrl?.isNotEmpty ?? false)
+              ? RouteMapPreview(
+                  route: activity.route,
+                  imagePath: activity.mapImageUrl,
+                  width: 64,
+                  height: 46,
+                  fitPadding: 6,
+                )
+              : Container(
+                  width: 64,
+                  height: 46,
+                  color: AppPalette.bgSurfaceNeutral,
+                  alignment: Alignment.center,
+                  child: const Icon(
+                    Icons.map_outlined,
+                    color: _secondaryColor,
+                    size: 25,
+                  ),
+                ),
         ),
         const SizedBox(width: 12),
         Expanded(

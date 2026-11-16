@@ -130,7 +130,7 @@ class AppFormat {
     return secondsPerKm == null ? "-'-\"" : pace(secondsPerKm);
   }
 
-  /// Format relatif untuk waktu notifikasi.
+  /// Format relatif untuk waktu notifikasi, misalnya 'Just now' atau '5 min ago'.
   static String notificationTime(DateTime dateTime, {DateTime? now}) {
     final current = now ?? DateTime.now();
     final currentDay = DateTime(current.year, current.month, current.day);
@@ -144,6 +144,10 @@ class AppFormat {
     }
 
     final elapsed = current.difference(dateTime);
+    if (elapsed < const Duration(minutes: 1)) return 'Just now';
+    if (elapsed < const Duration(hours: 1)) {
+      return '${elapsed.inMinutes} min ago';
+    }
     if (elapsed < const Duration(hours: 24)) {
       final hours = elapsed.inHours.clamp(1, 23);
       return hours == 1 ? '1 hour ago' : '$hours hours ago';

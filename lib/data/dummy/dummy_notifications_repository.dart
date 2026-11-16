@@ -1,10 +1,16 @@
 import 'package:runca/config/app_assets.dart';
 import 'package:runca/data/dummy_config.dart';
+import 'package:runca/features/dashboard/activity/models/activity_model.dart';
 import 'package:runca/features/dashboard/home/notifications/models/notification_model.dart';
+import 'package:runca/repository/activity_repository.dart';
 import 'package:runca/repository/notifications_repository.dart';
 import 'package:runca/utility/resource/data_state.dart';
 
 class DummyNotificationsRepository implements NotificationsRepository {
+  DummyNotificationsRepository({required this._activityRepository});
+
+  final ActivityRepository _activityRepository;
+
   @override
   Future<DataState<List<NotificationModel>>> getNotifications() async {
     await DummyConfig.simulateNetwork();
@@ -15,14 +21,35 @@ class DummyNotificationsRepository implements NotificationsRepository {
       case DummyScenario.empty:
         return const DataStateSuccess<List<NotificationModel>>([]);
       case DummyScenario.data:
+        final notifications = _buildNotifications(DateTime.now());
+        final activities = await _activityRepository.getActivities();
+        if (activities is DataStateSuccess<List<ActivityModel>>) {
+          final savedActivities = activities.data;
+          if (savedActivities != null) {
+            notifications.addAll(
+              savedActivities.map(_notificationFromActivity),
+            );
+          }
+        }
+        final indexedNotifications =
+            List.generate(
+              notifications.length,
+              (index) => (index: index, notification: notifications[index]),
+            )..sort((a, b) {
+              final byDate = b.notification.createdAt.compareTo(
+                a.notification.createdAt,
+              );
+              return byDate != 0 ? byDate : a.index.compareTo(b.index);
+            });
         return DataStateSuccess<List<NotificationModel>>(
-          _buildNotifications(DateTime.now()),
+          indexedNotifications
+              .map((entry) => entry.notification)
+              .toList(growable: false),
         );
     }
   }
 
   List<NotificationModel> _buildNotifications(DateTime now) {
-    final yesterday = DateTime(now.year, now.month, now.day - 1, 18, 42);
     final twoDaysAgo = DateTime(now.year, now.month, now.day - 2, 8);
 
     return [
@@ -45,21 +72,6 @@ class DummyNotificationsRepository implements NotificationsRepository {
         type: NotificationType.streak,
       ),
       NotificationModel(
-        id: 'notification-activity',
-        title: 'Your run is saved',
-        description:
-            'Afternoon Run at Simpang Lima has been synced to your activity history.',
-        createdAt: yesterday,
-        type: NotificationType.activity,
-        activity: const ActivitySummary(
-          title: 'Afternoon Run at Simpang Lima',
-          distanceKm: 5.12,
-          durationSeconds: 1714,
-          paceSecondsPerKm: 334,
-          calories: 384,
-        ),
-      ),
-      NotificationModel(
         id: 'notification-weekly-progress',
         title: 'Your weekly progress is ready',
         description:
@@ -74,5 +86,29 @@ class DummyNotificationsRepository implements NotificationsRepository {
         ),
       ),
     ];
+  }
+
+  NotificationModel _notificationFromActivity(ActivityModel activity) {
+    return NotificationModel(
+      id: 'notification-activity-${activity.id}',
+      title: activity.type == ActivityType.cycling
+          ? 'Your ride is saved'
+          : 'Your run is saved',
+      description:
+          '${activity.title} has been synced to your activity history.',
+      createdAt: activity.startedAt.add(
+        Duration(seconds: activity.durationSeconds),
+      ),
+      type: NotificationType.activity,
+      activity: ActivitySummary(
+        title: activity.title,
+        distanceKm: activity.distanceKm,
+        durationSeconds: activity.durationSeconds,
+        paceSecondsPerKm: activity.avgPaceSecondsPerKm,
+        calories: activity.calories,
+        route: activity.route,
+        mapImageUrl: activity.mapImageUrl,
+      ),
+    );
   }
 }

@@ -19,6 +19,7 @@ class RouteMapPreview extends StatelessWidget {
     this.imagePath,
     this.showStart = false,
     this.strokeWidth = 3,
+    this.fitPadding = 24,
   });
 
   final List<RoutePoint> route;
@@ -29,6 +30,7 @@ class RouteMapPreview extends StatelessWidget {
   /// Tampilkan titik biru di awal rute.
   final bool showStart;
   final double strokeWidth;
+  final double fitPadding;
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +55,7 @@ class RouteMapPreview extends StatelessWidget {
           options: MapOptions(
             initialCameraFit: CameraFit.bounds(
               bounds: LatLngBounds.fromPoints(points),
-              padding: const EdgeInsets.all(24),
+              padding: EdgeInsets.all(fitPadding),
               maxZoom: 18,
             ),
             interactionOptions: const InteractionOptions(

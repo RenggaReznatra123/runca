@@ -78,7 +78,9 @@ void registerRepositories(GetIt locator) {
   locator.registerLazySingleton<HelpRepository>(() => DummyHelpRepository());
 
   locator.registerLazySingleton<NotificationsRepository>(
-    () => DummyNotificationsRepository(),
+    () => DummyNotificationsRepository(
+      activityRepository: locator.get<ActivityRepository>(),
+    ),
   );
 
   locator.registerLazySingleton<LeaderboardRepository>(
